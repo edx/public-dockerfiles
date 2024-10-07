@@ -61,6 +61,8 @@ ENV REGISTRAR_CODE_DIR ${REGISTRAR_CODE_DIR}
 # Working directory will be root of repo.
 WORKDIR ${REGISTRAR_CODE_DIR}
 
+RUN mkdir -p requirements
+
 RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${REGISTRAR_VENV_DIR}
 
 RUN pip install --upgrade pip setuptools
@@ -74,9 +76,9 @@ EXPOSE 18735
 FROM app as dev
 
 # fetching the requirement file that is needed
-RUN curl -L -o devstack.txt https://raw.githubusercontent.com/edx/registrar/master/requirements/devstack.txt
+RUN curl -L -o requirements/devstack.txt https://raw.githubusercontent.com/edx/registrar/master/requirements/devstack.txt
 
-RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/devstack.txt
+RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/requirements/devstack.txt
 
 # cloning the repository after requirements installation
 RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
@@ -88,9 +90,9 @@ CMD while true; do python ./manage.py runserver 0.0.0.0:18734; sleep 2; done
 FROM app as prod
 
 # fetching the requirement file that is needed
-RUN curl -L -o production.txt https://raw.githubusercontent.com/edx/registrar/master/requirements/production.txt
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/registrar/master/requirements/production.txt
 
-RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/production.txt
+RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/requirements/production.txt
 
 # cloning the repository after requirements installation
 RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
