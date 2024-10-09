@@ -1,0 +1,70 @@
+name: Push edx-platform Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Target branch from which the source dockerfile from image will be sourced"
+
+  schedule:
+    - cron: "0 4 * * 1-5"  # UTC Time
+
+jobs:
+  push:
+    runs-on: ubuntu-22.04
+
+    strategy:
+      matrix:
+        variant:
+          - { tag: 'lms-dev', port: '18000', target: 'development' }
+          - { tag: 'cms-dev', port: '18000', target: 'development' }
+          - { tag: 'cms', port: '18010', target: 'production'}
+          - { tag: 'lms', port: '18010', target: 'production' }
+
+    steps:
+      - name: Get tag name
+        id: get-tag-name
+        uses: actions/github-script@v5
+        with:
+          script: |
+            const tagName = "${{ github.event.inputs.branch }}" || 'latest';
+            console.log('Will use tag: ' + tagName);
+            return tagName;
+          result-encoding: string
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push Dev Docker image
+        uses: docker/build-push-action@v6
+        with:
+          file: ./dockerfiles/edx-platform.Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64
+          target: ${{ matrix.variant.target }}
+          build-args: |
+            SERVICE_VARIANT: ${{ matrix.variant.tag }}
+            SERVICE_PORT: ${{ matrix.variant.port }}
+          tags: edxops/${{matrix.variant.tag}}:${{ steps.get-tag-name.outputs.result }}
+
+      - name: Send failure notification
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: email-smtp.us-east-1.amazonaws.com
+          server_port: 465
+          username: ${{secrets.edx_smtp_username}}
+          password: ${{secrets.edx_smtp_password}}
+          subject: Push Image to docker.io/edxops failed in edx-platform
+          to: arch-bom@edx.org
+          from: github-actions <github-actions@edx.org>
+          body: Push Image to docker.io/edxops for edx-platform failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
