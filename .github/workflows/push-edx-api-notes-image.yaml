@@ -42,6 +42,7 @@ jobs:
           push: true
           target: dev
           tags: edxops/edx-api-notes-dev:${{ steps.get-tag-name.outputs.result }}
+          platforms: linux/amd64,linux/arm64
 
       - name: Send failure notification
         if: failure()
