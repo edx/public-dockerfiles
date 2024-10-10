@@ -113,7 +113,9 @@ RUN python3.11 -m venv "${VIRTUAL_ENV}"
 
 # Install python requirements
 # Requires copying over requirements files, but not entire repository
-COPY requirements requirements
+RUN mkdir -p requirements/edx
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/pip.txt
+RUN curl -L -o requirements/edx/base.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/edx/base.txt
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/edx/base.txt
 
@@ -124,11 +126,12 @@ RUN npm install -g npm@10.5.x
 # This script is used by an npm post-install hook.
 # We copy it into the image now so that it will be available when we run `npm install` in the next step.
 # The script itself will copy certain modules into some uber-legacy parts of edx-platform which still use RequireJS.
-COPY scripts/copy-node-modules.sh scripts/copy-node-modules.sh
+RUN mkdir abc
+RUN curl -L -o abc/copy-node-modules.sh https://raw.githubusercontent.com/openedx/edx-platform/master/scripts/copy-node-modules.sh
 
 # Install node modules
-COPY package.json package.json
-COPY package-lock.json package-lock.json
+RUN curl -L -o package.json https://raw.githubusercontent.com/openedx/edx-platform/master/package.json
+RUN curl -L -o package-lock.json https://raw.githubusercontent.com/openedx/edx-platform/master/package-lock.json
 RUN npm set progress=false && npm ci
 
 # The builder-development stage is a temporary stage that installs python modules required for development purposes
