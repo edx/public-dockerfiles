@@ -45,7 +45,7 @@ jobs:
         with:
           file: ./dockerfiles/enterprise-subsidy.Dockerfile
           push: true
-          target: dev
+          target: devstack
           tags: edxops/enterprise-subsidy-dev:${{ steps.get-tag-name.outputs.result }}
 
       - name: Send failure notification
