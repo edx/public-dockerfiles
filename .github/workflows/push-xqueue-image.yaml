@@ -9,11 +9,6 @@ on:
   schedule:
     - cron: "0 4 * * 1-5"  # UTC Time
 
-#  Added for testing purposes. Will remove once the PR is finalised
-  pull_request:
-    branches:
-      - '**'
-
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
@@ -47,7 +42,7 @@ jobs:
           file: ./dockerfiles/xqueue.Dockerfile
           push: true
           target: dev
-          tags: edxops/xqueue-dev-test:${{ steps.get-tag-name.outputs.result }}
+          tags: edxops/xqueue-dev:${{ steps.get-tag-name.outputs.result }}
 
       - name: Send failure notification
         if: failure()
