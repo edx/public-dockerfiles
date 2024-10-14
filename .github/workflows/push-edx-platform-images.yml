@@ -1,4 +1,4 @@
-name: Push Docker Images
+name: Push edx-platform Docker Images
 
 on:
   workflow_dispatch:
@@ -67,6 +67,3 @@ jobs:
           to: team-cosmonauts@edx.org
           from: github-actions <github-actions@edx.org>
           body: Push Image to docker.io/edxops for registrar failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-
-
-# make docker_tag_build_push_${{matrix.variant}}
