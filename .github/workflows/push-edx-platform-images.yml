@@ -21,10 +21,10 @@ jobs:
     strategy:
       matrix:
         variant:
-          - { tag: 'lms_dev', port: '8081' }
-          - { tag: 'cms_dev', port: '8082' }
-          - { tag: 'cms', port: '8083' }
-          - { tag: 'lms', port: '8084' }
+          - { tag: 'lms_dev', port: '8000' }
+          - { tag: 'cms_dev', port: '8000' }
+          - { tag: 'cms', port: '8010' }
+          - { tag: 'lms', port: '8010' }
 
     steps:
       - name: Get tag name
