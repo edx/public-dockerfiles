@@ -55,6 +55,7 @@ RUN apt-get update && \
 RUN apt-get update && \
     apt-get -y dist-upgrade && \
     apt-get -y install --no-install-recommends \
+        curl \
         python3-pip \
         python3.11 \
         # python3-dev: required for building mysqlclient python package
@@ -93,7 +94,6 @@ FROM minimal-system as builder-production
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
-        curl \
         libssl-dev \
         libffi-dev \
         libfreetype6-dev \
@@ -116,6 +116,8 @@ RUN python3.11 -m venv "${VIRTUAL_ENV}"
 RUN mkdir -p requirements/edx
 RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/pip.txt
 RUN curl -L -o requirements/edx/base.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/edx/base.txt
+
+
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/edx/base.txt
 
@@ -126,17 +128,22 @@ RUN npm install -g npm@10.5.x
 # This script is used by an npm post-install hook.
 # We copy it into the image now so that it will be available when we run `npm install` in the next step.
 # The script itself will copy certain modules into some uber-legacy parts of edx-platform which still use RequireJS.
-RUN mkdir abc
-RUN curl -L -o abc/copy-node-modules.sh https://raw.githubusercontent.com/openedx/edx-platform/master/scripts/copy-node-modules.sh
+RUN mkdir scripts
+RUN curl -L -o scripts/copy-node-modules.sh https://raw.githubusercontent.com/openedx/edx-platform/master/scripts/copy-node-modules.sh
 
 # Install node modules
 RUN curl -L -o package.json https://raw.githubusercontent.com/openedx/edx-platform/master/package.json
 RUN curl -L -o package-lock.json https://raw.githubusercontent.com/openedx/edx-platform/master/package-lock.json
+
+
+RUN chmod +x scripts/copy-node-modules.sh
 RUN npm set progress=false && npm ci
 
 # The builder-development stage is a temporary stage that installs python modules required for development purposes
 # The built artifacts from this stage are then copied to the development stage.
 FROM builder-production as builder-development
+
+RUN curl -L -o requirements/edx/development.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/edx/development.txt
 
 RUN pip install -r requirements/edx/development.txt
 
@@ -149,7 +156,8 @@ COPY --from=builder-production /edx/app/edxapp/nodeenv /edx/app/edxapp/nodeenv
 COPY --from=builder-production /edx/app/edxapp/edx-platform/node_modules /edx/app/edxapp/edx-platform/node_modules
 
 # Copy over remaining parts of repository (including all code)
-COPY . .
+
+RUN curl -L https://github.com/openedx/edx-platform/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 # Install Python requirements again in order to capture local projects
 RUN pip install -e .
