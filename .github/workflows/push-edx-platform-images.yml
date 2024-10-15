@@ -54,6 +54,7 @@ jobs:
         with:
           file: ./dockerfiles/edx-platform.Dockerfile
           push: true
+          platforms: linux/amd64,linux/arm64
           target: ${{ matrix.variant.target }}
           build-args: |
             SERVICE_VARIANT: ${{ matrix.variant.tag }}
