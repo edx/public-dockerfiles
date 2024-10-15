@@ -61,9 +61,7 @@ ENV REGISTRAR_CODE_DIR ${REGISTRAR_CODE_DIR}
 # Working directory will be root of repo.
 WORKDIR ${REGISTRAR_CODE_DIR}
 
-# cloning git repo
-RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
-
+RUN mkdir -p requirements
 
 RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${REGISTRAR_VENV_DIR}
 
@@ -77,7 +75,13 @@ EXPOSE 18735
 
 FROM app as dev
 
-RUN pip install --no-cache-dir -r requirements/devstack.txt
+# fetching the requirement file that is needed
+RUN curl -L -o requirements/devstack.txt https://raw.githubusercontent.com/edx/registrar/master/requirements/devstack.txt
+
+RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/requirements/devstack.txt
+
+# cloning the repository after requirements installation
+RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 ENV DJANGO_SETTINGS_MODULE registrar.settings.devstack
 
@@ -85,7 +89,13 @@ CMD while true; do python ./manage.py runserver 0.0.0.0:18734; sleep 2; done
 
 FROM app as prod
 
-RUN pip install  --no-cache-dir -r ${REGISTRAR_CODE_DIR}/requirements/production.txt
+# fetching the requirement file that is needed
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/registrar/master/requirements/production.txt
+
+RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/requirements/production.txt
+
+# cloning the repository after requirements installation
+RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 ENV DJANGO_SETTINGS_MODULE registrar.settings.production
 
