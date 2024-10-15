@@ -21,8 +21,8 @@ jobs:
     strategy:
       matrix:
         variant:
-          - { tag: 'lms_dev', port: '8000', target: 'development' }
-          - { tag: 'cms_dev', port: '8000', target: 'development' }
+          - { tag: 'lms-dev', port: '8000', target: 'development' }
+          - { tag: 'cms-dev', port: '8000', target: 'development' }
           - { tag: 'cms', port: '8010', target: 'production'}
           - { tag: 'lms', port: '8010', target: 'production' }
 
@@ -58,7 +58,7 @@ jobs:
           build-args: |
             SERVICE_VARIANT: ${{ matrix.variant.tag }}
             SERVICE_PORT: ${{ matrix.variant.port }}
-          tags: edxops/${{matrix.variant.tag}}-dev:${{ steps.get-tag-name.outputs.result }}
+          tags: edxops/${{matrix.variant.tag}}:${{ steps.get-tag-name.outputs.result }}
 
       - name: Send failure notification
         if: failure()
