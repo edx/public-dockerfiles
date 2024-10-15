@@ -53,6 +53,6 @@ jobs:
           username: ${{secrets.edx_smtp_username}}
           password: ${{secrets.edx_smtp_password}}
           subject: Push Image to docker.io/edxops failed in Xqueue
-          to: team-cosmonauts@edx.org
+          to: team-aurora@edx.org
           from: github-actions <github-actions@edx.org>
           body: Push Image to docker.io/edxops for Xqueue failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
