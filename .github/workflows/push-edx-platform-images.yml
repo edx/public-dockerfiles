@@ -21,10 +21,10 @@ jobs:
     strategy:
       matrix:
         variant:
-          - { tag: 'lms_dev', port: '8000' }
-          - { tag: 'cms_dev', port: '8000' }
-          - { tag: 'cms', port: '8010' }
-          - { tag: 'lms', port: '8010' }
+          - { tag: 'lms_dev', port: '8000', target: 'development' }
+          - { tag: 'cms_dev', port: '8000', target: 'development' }
+          - { tag: 'cms', port: '8010', target: 'production'}
+          - { tag: 'lms', port: '8010', target: 'production' }
 
     steps:
       - name: Get tag name
@@ -54,7 +54,7 @@ jobs:
         with:
           file: ./dockerfiles/edx-platform.Dockerfile
           push: true
-          target: dev
+          target: ${{ matrix.variant.target }}
           build-args: |
             SERVICE_VARIANT: ${{ matrix.variant.tag }}
             SERVICE_PORT: ${{ matrix.variant.port }}
