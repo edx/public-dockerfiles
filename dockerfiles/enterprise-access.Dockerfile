@@ -46,7 +46,7 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  pkg-config \
  libmysqlclient-dev \
  libssl-dev \
- git \ 
+ git \
  wget \
  curl \
  libffi-dev \
@@ -59,15 +59,13 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN pip install --upgrade pip setuptools
-# delete apt package lists because we do not need them inflating our image
+
+# Remove package lists to reduce image size
 RUN rm -rf /var/lib/apt/lists/*
 
-# need to use virtualenv pypi package with Python 3.12
+# Set up Python environment and install virtualenv
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
 RUN pip install virtualenv
-
-# cloning git repo
-RUN curl -L https://github.com/openedx/enterprise-access/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
 
 # Create a virtualenv for sanity
 ENV VIRTUAL_ENV=/edx/venvs/enterprise-access
@@ -94,16 +92,20 @@ RUN useradd -m --shell /bin/false app
 
 WORKDIR /edx/app/enterprise-access
 
-RUN pwd
+RUN mkdir -p /requirements
 
+RUN curl -L -o /requirements/pip.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/pip.txt
+RUN curl -L -o /requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/production.txt
 # Dependencies are installed as root so they cannot be modified by the application user.
 RUN pip install -r /requirements/pip.txt
 RUN pip install -r /requirements/production.txt
 
 RUN mkdir -p /edx/var/log
 
-# Code is owned by root so it cannot be modified by the application user.
-# So we copy it before changing users.
+# Clone the source code
+RUN curl -L https://github.com/openedx/enterprise-access/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+
+# Change user to app
 USER app
 
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
@@ -115,6 +117,7 @@ CMD newrelic-admin run-program gunicorn --workers=2 --name enterprise-access -c 
 
 FROM app as devstack
 USER root
+RUN curl -L -o /requirements/dev.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/dev.txt
 RUN pip install -r /requirements/dev.txt
 USER app
 CMD gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/enterprise_access/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_access.wsgi:application
