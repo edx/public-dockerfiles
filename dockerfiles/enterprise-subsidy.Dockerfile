@@ -54,7 +54,7 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  python3-pip \
  python${PYTHON_VERSION} \
  python${PYTHON_VERSION}-dev \
- python${PYTHON_VERSION}-distutils 
+ python${PYTHON_VERSION}-distutils
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
@@ -65,8 +65,7 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
 RUN pip install virtualenv
 
-# cloning git repo
-RUN curl -L https://github.com/openedx/enterprise-subsidy/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+RUN mkdir -p requirements
 
 # Create a virtualenv for sanity
 ENV VIRTUAL_ENV=/edx/venvs/enterprise-subsidy
@@ -83,10 +82,17 @@ EXPOSE 18280
 RUN useradd -m --shell /bin/false app
 
 # Dependencies are installed as root so they cannot be modified by the application user.
+
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/enterprise-subsidy/main/requirements/pip.txt
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-subsidy/main/requirements/production.txt
+
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/production.txt
 
 RUN mkdir -p /edx/var/log
+
+# cloning git repo
+RUN curl -L https://github.com/openedx/enterprise-subsidy/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
@@ -102,6 +108,7 @@ CMD gunicorn --workers=2 --name enterprise-subsidy -c /edx/app/enterprise-subsid
 
 FROM app as devstack
 USER root
+RUN curl -L -o requirements/dev.txt https://raw.githubusercontent.com/openedx/enterprise-subsidy/main/requirements/dev.txt
 RUN pip install -r requirements/dev.txt
 USER app
 CMD gunicorn --workers=2 --name enterprise-subsidy -c /edx/app/enterprise-subsidy/enterprise_subsidy/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_subsidy.wsgi:application
