@@ -50,8 +50,7 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
 RUN pip install virtualenv
 
-# cloning git repo
-RUN curl -L https://github.com/openedx/enterprise-catalog/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+RUN mkdir -p requirements
 
 ENV VIRTUAL_ENV=/venv
 RUN virtualenv -p python$PYTHON_VERSION $VIRTUAL_ENV
@@ -71,7 +70,12 @@ EXPOSE 8161
 
 RUN useradd -m --shell /bin/false app
 
+
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-catalog/master/requirements/production.txt
 RUN pip install -r requirements/production.txt
+
+# Cloning the repository
+RUN curl -L https://github.com/openedx/enterprise-catalog/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
@@ -99,6 +103,7 @@ FROM app as legacy_devapp
 EXPOSE 18160
 EXPOSE 18161
 USER root
+RUN curl -L -o requirements/dev.txt https://raw.githubusercontent.com/openedx/enterprise-catalog/master/requirements/dev.txt
 RUN pip install -r requirements/dev.txt
 USER app
 CMD ["gunicorn", "--reload", "--workers=2", "--name", "enterprise_catalog", "-b", ":18160", "-c", "/edx/app/enterprise_catalog/enterprise_catalog/enterprise_catalog/docker_gunicorn_configuration.py", "--log-file", "-", "--max-requests=1000", "enterprise_catalog.wsgi:application"]
