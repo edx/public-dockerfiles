@@ -1,4 +1,4 @@
-name: Build and Push Edx Api Notes Image
+name: Build and Push Edx Notes Api Image
 
 on:
   workflow_dispatch:
@@ -38,10 +38,10 @@ jobs:
       - name: Build and push Dev Docker image
         uses: docker/build-push-action@v6
         with:
-          file: ./dockerfiles/edx-api-notes.Dockerfile
+          file: ./dockerfiles/edx-notes-api.Dockerfile
           push: true
           target: dev
-          tags: edxops/edx-api-notes-dev:${{ steps.get-tag-name.outputs.result }}
+          tags: edxops/edx-notes-api-dev:${{ steps.get-tag-name.outputs.result }}
           platforms: linux/amd64,linux/arm64
 
       - name: Send failure notification
@@ -52,7 +52,7 @@ jobs:
           server_port: 465
           username: ${{secrets.edx_smtp_username}}
           password: ${{secrets.edx_smtp_password}}
-          subject: Push Image to docker.io/edxops failed in Edx Api Notes
+          subject: Push Image to docker.io/edxops failed in Edx Notes Api
           to: team-aurora@edx.org
           from: github-actions <github-actions@edx.org>
-          body: Push Image to docker.io/edxops for Edx Api Notes failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          body: Push Image to docker.io/edxops for Edx Notes Api failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
