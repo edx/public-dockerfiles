@@ -1,7 +1,7 @@
 FROM ubuntu:focal as app
 
 # Packages installed:
-# git; Used to pull in particular requirements from github rather than pypi, 
+# git; Used to pull in particular requirements from github rather than pypi,
 # and to check the sha of the code checkout.
 
 # language-pack-en locales; ubuntu locale support so that system utilities have a consistent
@@ -12,7 +12,7 @@ FROM ubuntu:focal as app
 
 # libssl-dev; # mysqlclient wont install without this.
 
-# libmysqlclient-dev; to install header files needed to use native C implementation for 
+# libmysqlclient-dev; to install header files needed to use native C implementation for
 # MySQL-python for performance gains.
 
 # If you add a package here please include a comment above describing what it is used for
@@ -54,12 +54,15 @@ RUN useradd -m --shell /bin/false app
 # Install curl
 RUN apt-get update && apt-get install -y curl
 
-# cloning git repo
-RUN curl -L https://github.com/openedx/edx-notes-api/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+RUN mkdir -p requirements
 
 RUN virtualenv -p python3.8 --always-copy ${NOTES_VENV_DIR}
 
-# edx_notes_api service config commands below
+RUN pip install --upgrade pip setuptools
+
+RUN curl -L -o requirements/base.txt https://raw.githubusercontent.com/openedx/edx-notes-api/master/requirements/base.txt
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/edx-notes-api/master/requirements/pip.txt
+
 RUN pip install --no-cache-dir -r requirements/base.txt
 RUN pip install --no-cache-dir -r requirements/pip.txt
 
@@ -72,7 +75,9 @@ FROM app as dev
 ENV DJANGO_SETTINGS_MODULE "notesserver.settings.devstack"
 
 # Backwards compatibility with devstack
-RUN touch "${COMMON_APP_DIR}/edx_notes_api_env" 
+RUN touch "${COMMON_APP_DIR}/edx_notes_api_env"
+
+RUN curl -L https://github.com/openedx/edx-notes-api/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:8120; sleep 2; done
 
@@ -81,8 +86,8 @@ FROM app as production
 ENV EDXNOTES_CONFIG_ROOT /edx/etc
 ENV DJANGO_SETTINGS_MODULE "notesserver.settings.yaml_config"
 
-# Code is owned by root so it cannot be modified by the application user.
-# So we copy it before changing users.
+RUN curl -L https://github.com/openedx/edx-notes-api/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+
 USER app
 
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
