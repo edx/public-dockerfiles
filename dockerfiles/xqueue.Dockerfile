@@ -3,7 +3,7 @@ FROM ubuntu:focal as app
 # System requirements
 
 RUN apt-get update && \
-    apt-get upgrade -qy && DEBIAN_FRONTEND=noninteractive apt-get install language-pack-en locales git \
+    apt-get upgrade -qy && DEBIAN_FRONTEND=noninteractive apt-get install language-pack-en locales git curl \
     python3.8-dev python3-virtualenv libmysqlclient-dev libssl-dev build-essential pkg-config wget unzip -qy && \
     rm -rf /var/lib/apt/lists/*
 
@@ -16,7 +16,6 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-
 ARG COMMON_APP_DIR="/edx/app"
 ARG XQUEUE_APP_DIR="${COMMON_APP_DIR}/xqueue"
 ENV XQUEUE_APP_DIR="${COMMON_APP_DIR}/xqueue"
@@ -25,17 +24,16 @@ ENV XQUEUE_CODE_DIR="${XQUEUE_APP_DIR}/xqueue"
 
 ENV PATH="$XQUEUE_VENV_DIR/bin:$PATH"
 
+RUN mkdir -p requirements
+
 # Working directory will be root of repo.
 WORKDIR ${XQUEUE_CODE_DIR}
-
-# Install curl
-RUN apt-get update && apt-get install -y curl
 # cloning git repo
 RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 RUN virtualenv -p python3.8 --always-copy ${XQUEUE_VENV_DIR}
 
-# placeholder file for the time being unless devstack provisioning scripts need it.
+# Create placeholder file for devstack provisioning, if needed
 RUN touch ${XQUEUE_APP_DIR}/xqueue_env
 
 # Expose ports.
@@ -43,6 +41,7 @@ EXPOSE 8040
 
 FROM app as dev
 
+RUN curl -L -o ${XQUEUE_CODE_DIR}/requirements/dev.txt https://raw.githubusercontent.com/openedx/xqueue/master/requirements/dev.txt
 # xqueue service config commands below
 RUN pip install -r ${XQUEUE_CODE_DIR}/requirements/dev.txt
 
@@ -52,6 +51,7 @@ CMD while true; do python ./manage.py runserver 0.0.0.0:8040; sleep 2; done
 
 FROM app as production
 
+RUN curl -L -o ${XQUEUE_APP_DIR}/requirements.txt https://raw.githubusercontent.com/openedx/xqueue/master/requirements.txt
 # xqueue service config commands below
 RUN pip install -r ${XQUEUE_APP_DIR}/requirements.txt
 
