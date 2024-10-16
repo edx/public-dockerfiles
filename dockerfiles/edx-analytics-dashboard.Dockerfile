@@ -51,8 +51,8 @@ ENV PYTHON_VERSION "${PYTHON_VERSION}"
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
 RUN pip install virtualenv
 
-# cloning git repo
-RUN curl -L https://github.com/edx/edx-analytics-dashboard//archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+# Create required directories for requirements
+RUN mkdir -p requirements
 
 # No need to activate insights virtualenv as it is already activated by putting in the path
 RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${INSIGHTS_VENV_DIR}
@@ -60,7 +60,10 @@ RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${INSIGHTS_VENV_DIR}
 ENV PATH="${INSIGHTS_CODE_DIR}/node_modules/.bin:$PATH"
 
 # insights service config commands below
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/edx-analytics-dashboard/master/requirements/production.txt
 RUN pip install  --no-cache-dir -r requirements/production.txt
+
+RUN curl -L https://github.com/edx/edx-analytics-dashboard/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 RUN nodeenv ${INSIGHTS_NODEENV_DIR} --node=18.20.2 --prebuilt \
   && npm install -g npm@10.5.x
@@ -72,6 +75,7 @@ EXPOSE 18110
 
 FROM app as dev
 
+RUN curl -L -o requirements/local.txt https://raw.githubusercontent.com/edx/edx-analytics-dashboard/master/requirements/local.txt
 RUN pip install --no-cache-dir -r requirements/local.txt
 
 ENV DJANGO_SETTINGS_MODULE "analytics_dashboard.settings.devstack"
