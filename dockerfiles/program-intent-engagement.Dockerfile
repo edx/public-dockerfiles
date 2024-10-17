@@ -75,6 +75,9 @@ ENV DJANGO_SETTINGS_MODULE program_intent_engagement.settings.production
 EXPOSE 18781
 RUN useradd -m --shell /bin/false app
 
+# Clone the repository
+RUN curl -L https://github.com/edx/program-intent-engagement/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+
 WORKDIR /edx/app/program-intent-engagement
 
 # Create required directories for requirements
@@ -87,8 +90,6 @@ RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${INTENT_MANAGEMENT_VENV
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/program-intent-engagement/main/requirements/production.txt
 RUN pip install -r requirements/production.txt
 
-# Clone the repository
-RUN curl -L https://github.com/edx/program-intent-engagement/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
 
 RUN mkdir -p /edx/var/log
 
