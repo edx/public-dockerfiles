@@ -58,16 +58,19 @@ WORKDIR /edx/app/designer
 ARG DESIGNER_VENV_DIR="/edx/app/venvs/designer"
 ENV PATH="$DESIGNER_VENV_DIR/bin:$PATH"
 
-# cloning git repo
-RUN curl -L https://github.com/edx/portal-designer/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+RUN mkdir -p requirements
 
-# Create virtualenv to install requirements
+# Create virtual environment for the application
 RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${DESIGNER_VENV_DIR}
 
-# Dependencies are installed as root so they cannot be modified by the application user.
+# Download and install application requirements
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/portal-designer/master/requirements/production.txt
 RUN pip install -r requirements/production.txt
 
 RUN mkdir -p /edx/var/log
+
+# Clone the application code
+RUN curl -L https://github.com/edx/portal-designer/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
@@ -80,5 +83,6 @@ CMD gunicorn --workers=2 --name designer -c /edx/app/designer/designer/docker_gu
 FROM app as devstack
 # Install dependencies as root and revert back to application user
 USER root
+RUN curl -L -o requirements/dev.txt https://raw.githubusercontent.com/edx/portal-designer/master/requirements/dev.txt
 RUN pip install -r /edx/app/designer/requirements/dev.txt
 USER app
