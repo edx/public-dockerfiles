@@ -87,10 +87,10 @@ RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${INTENT_MANAGEMENT_VENV
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/program-intent-engagement/main/requirements/production.txt
 RUN pip install -r requirements/production.txt
 
-RUN mkdir -p /edx/var/log
-
 # Clone the repository
 RUN curl -L https://github.com/edx/program-intent-engagement/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+
+RUN mkdir -p /edx/var/log
 
 # Code is owned by root so it cannot be modified by the application user.
 USER app
