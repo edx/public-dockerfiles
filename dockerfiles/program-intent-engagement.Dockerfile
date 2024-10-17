@@ -77,19 +77,22 @@ RUN useradd -m --shell /bin/false app
 
 WORKDIR /edx/app/program-intent-engagement
 
-# cloning git repo
-RUN curl -L https://github.com/edx/program-intent-engagement/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+# Create required directories for requirements
+RUN mkdir -p requirements
 
 ARG INTENT_MANAGEMENT_VENV_DIR="/edx/app/venvs/program-intent-management"
 RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${INTENT_MANAGEMENT_VENV_DIR}
 
 # Dependencies are installed as root so they cannot be modified by the application user.
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/program-intent-engagement/main/requirements/production.txt
 RUN pip install -r requirements/production.txt
 
 RUN mkdir -p /edx/var/log
 
+# Clone the repository
+RUN curl -L https://github.com/edx/program-intent-engagement/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+
 # Code is owned by root so it cannot be modified by the application user.
-# So we copy it before changing users.
 USER app
 
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
