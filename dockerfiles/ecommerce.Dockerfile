@@ -47,9 +47,9 @@ RUN nodeenv ${ECOMMERCE_NODEENV_DIR} --node=16.14.0 --prebuilt && npm install -g
 WORKDIR ${ECOMMERCE_CODE_DIR}
 
 # Install JS requirements
-RUN curl -L -o package.json https://raw.githubusercontent.com/edx/ecommerce/master/package.json
-RUN curl -L -o package-lock.json.txt https://raw.githubusercontent.com/edx/ecommerce/master/package-lock.json
-RUN curl -L -o bower.json https://raw.githubusercontent.com/edx/ecommerce/master/bower.json
+RUN curl -L -o package.json https://raw.githubusercontent.com/edx/ecommerce/2u/main/package.json
+RUN curl -L -o package-lock.json.txt https://raw.githubusercontent.com/edx/ecommerce/2u/main/package-lock.json
+RUN curl -L -o bower.json https://raw.githubusercontent.com/edx/ecommerce/2u/main/bower.json
 RUN npm install --production && ./node_modules/.bin/bower install --allow-root --production
 
 # Expose canonical ecommerce port
@@ -60,14 +60,14 @@ FROM app as prod
 ENV DJANGO_SETTINGS_MODULE "ecommerce.settings.production"
 
 RUN mkdir requirements
-RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/ecommerce/master/requirements/production.txt
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/ecommerce/2u/main/requirements/production.txt
 
 RUN pip install -r ${ECOMMERCE_CODE_DIR}/requirements/production.txt
 
 # Copy over rest of code.
 # We do this AFTER requirements so that the requirements cache isn't busted
 # every time any bit of code is changed.
-COPY . .
+RUN curl -L https://github.com/edx/ecommerce/archive/refs/heads/2u/main.tar.gz | tar -xz --strip-components=1
 
 CMD gunicorn --bind=0.0.0.0:18130 --workers 2 --max-requests=1000 -c ecommerce/docker_gunicorn_configuration.py ecommerce.wsgi:application
 
@@ -76,7 +76,7 @@ FROM app as dev
 ENV DJANGO_SETTINGS_MODULE "ecommerce.settings.devstack"
 
 RUN mkdir requirements
-RUN curl -L -o requirements/dev.txt https://raw.githubusercontent.com/edx/ecommerce/master/requirements/dev.txt
+RUN curl -L -o requirements/dev.txt https://raw.githubusercontent.com/edx/ecommerce/2u/main/requirements/dev.txt
 
 RUN pip install -r ${ECOMMERCE_CODE_DIR}/requirements/dev.txt
 
@@ -86,6 +86,6 @@ RUN touch ${ECOMMERCE_APP_DIR}/ecommerce_env
 # Copy over rest of code.
 # We do this AFTER requirements so that the requirements cache isn't busted
 # every time any bit of code is changed.
-COPY . .
+RUN curl -L https://github.com/openedx/ecommerce/archive/refs/heads/2u/main.tar.gz | tar -xz --strip-components=1
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:18130; sleep 2; done

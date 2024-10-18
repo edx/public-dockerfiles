@@ -6,6 +6,11 @@ on:
       branch:
         description: "Target branch from which the source dockerfile from image will be sourced"
 
+  #  Added for testing purposes. Will remove once the PR is finalised
+  pull_request:
+    branches:
+      - '**'
+
   schedule:
     - cron: "0 4 * * 1-5"  # UTC Time
 
