@@ -24,12 +24,10 @@ ENV XQUEUE_CODE_DIR="${XQUEUE_APP_DIR}/xqueue"
 
 ENV PATH="$XQUEUE_VENV_DIR/bin:$PATH"
 
-RUN mkdir -p requirements
-
 # Working directory will be root of repo.
 WORKDIR ${XQUEUE_CODE_DIR}
-# cloning git repo
-RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+
+RUN mkdir -p requirements
 
 RUN virtualenv -p python3.8 --always-copy ${XQUEUE_VENV_DIR}
 
@@ -45,6 +43,9 @@ RUN curl -L -o ${XQUEUE_CODE_DIR}/requirements/dev.txt https://raw.githubusercon
 # xqueue service config commands below
 RUN pip install -r ${XQUEUE_CODE_DIR}/requirements/dev.txt
 
+# cloning git repo
+RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+
 ENV DJANGO_SETTINGS_MODULE xqueue.devstack
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:8040; sleep 2; done
@@ -54,6 +55,9 @@ FROM app as production
 RUN curl -L -o ${XQUEUE_APP_DIR}/requirements.txt https://raw.githubusercontent.com/openedx/xqueue/master/requirements.txt
 # xqueue service config commands below
 RUN pip install -r ${XQUEUE_APP_DIR}/requirements.txt
+
+# cloning git repo
+RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 ENV DJANGO_SETTINGS_MODULE xqueue.production
 
