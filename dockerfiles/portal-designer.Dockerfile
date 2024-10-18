@@ -83,6 +83,5 @@ CMD gunicorn --workers=2 --name designer -c /edx/app/designer/designer/docker_gu
 FROM app as devstack
 # Install dependencies as root and revert back to application user
 USER root
-RUN curl -L -o requirements/dev.txt https://raw.githubusercontent.com/edx/portal-designer/master/requirements/dev.txt
 RUN pip install -r /edx/app/designer/requirements/dev.txt
 USER app
