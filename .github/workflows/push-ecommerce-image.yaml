@@ -45,15 +45,17 @@ jobs:
           tags: edxops/ecommerce-dev:${{ steps.get-tag-name.outputs.result }}
           platforms: linux/amd64,linux/arm64
 
-      - name: Send failure notification
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: email-smtp.us-east-1.amazonaws.com
-          server_port: 465
-          username: ${{secrets.edx_smtp_username}}
-          password: ${{secrets.edx_smtp_password}}
-          subject: Push Image to docker.io/edxops failed in ecommerce
-          to: team-cosmonauts@edx.org
-          from: github-actions <github-actions@edx.org>
-          body: Push Image to docker.io/edxops for ecommerce failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+#       Commenting this as we don't have email for red ventures yet
+#      - name: Send failure notification
+#        if: failure()
+#        uses: dawidd6/action-send-mail@v3
+#        with:
+#          server_address: email-smtp.us-east-1.amazonaws.com
+#          server_port: 465
+#          username: ${{secrets.edx_smtp_username}}
+#          password: ${{secrets.edx_smtp_password}}
+#          subject: Push Image to docker.io/edxops failed in ecommerce
+#          to: team-cosmonauts@edx.org
+#          from: github-actions <github-actions@edx.org>
+#          body: Push Image to docker.io/edxops for ecommerce failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
