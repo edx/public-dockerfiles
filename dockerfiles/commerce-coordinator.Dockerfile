@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 MAINTAINER sre@edx.org
 
 
@@ -37,11 +37,11 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
-ENV DJANGO_SETTINGS_MODULE commerce_coordinator.settings.production
+ENV DJANGO_SETTINGS_MODULE=commerce_coordinator.settings.production
 
 EXPOSE 8140
 

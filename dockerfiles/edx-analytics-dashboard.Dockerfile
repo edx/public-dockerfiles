@@ -1,6 +1,6 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 
 ARG PYTHON_VERSION=3.8
 
@@ -30,23 +30,23 @@ RUN apt-get update && \
   rm -rf /var/lib/apt/lists/*
 
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 # ENV variables lifetime is bound to the container whereas ARGS variables lifetime is bound to the image building process only
 # Also ARGS provide us an option of compatibility of Path structure for Tutor and other OpenedX installations
-ARG COMMON_CFG_DIR "/edx/etc"
+ARG COMMON_CFG_DIR="/edx/etc"
 ARG COMMON_APP_DIR="/edx/app"
 ARG INSIGHTS_APP_DIR="${COMMON_APP_DIR}/insights"
 ARG INSIGHTS_VENV_DIR="${COMMON_APP_DIR}/insights/venvs/insights"
 ARG INSIGHTS_CODE_DIR="${INSIGHTS_APP_DIR}/edx_analytics_dashboard"
 ARG INSIGHTS_NODEENV_DIR="${COMMON_APP_DIR}/insights/nodeenvs/insights"
 
-ENV PATH "${INSIGHTS_VENV_DIR}/bin:${INSIGHTS_NODEENV_DIR}/bin:$PATH"
-ENV INSIGHTS_APP_DIR ${INSIGHTS_APP_DIR}
-ENV THEME_SCSS "sass/themes/open-edx.scss"
-ENV PYTHON_VERSION "${PYTHON_VERSION}"
+ENV PATH="${INSIGHTS_VENV_DIR}/bin:${INSIGHTS_NODEENV_DIR}/bin:$PATH"
+ENV INSIGHTS_APP_DIR=${INSIGHTS_APP_DIR}
+ENV THEME_SCSS="sass/themes/open-edx.scss"
+ENV PYTHON_VERSION="${PYTHON_VERSION}"
 
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
 RUN pip install virtualenv
@@ -75,20 +75,20 @@ RUN npm set progress=false && npm ci
 EXPOSE 8110
 EXPOSE 18110
 
-FROM app as dev
+FROM app AS dev
 
 RUN pip install --no-cache-dir -r requirements/local.txt
 
-ENV DJANGO_SETTINGS_MODULE "analytics_dashboard.settings.devstack"
+ENV DJANGO_SETTINGS_MODULE="analytics_dashboard.settings.devstack"
 
 # Backwards compatibility with devstack
 RUN touch "${INSIGHTS_APP_DIR}/insights_env"
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:8110; sleep 2; done
 
-FROM app as prod
+FROM app AS prod
 
-ENV DJANGO_SETTINGS_MODULE "analytics_dashboard.settings.production"
+ENV DJANGO_SETTINGS_MODULE="analytics_dashboard.settings.production"
 
 CMD gunicorn \
   --pythonpath=/edx/app/insights/edx_analytics_dashboard/analytics_dashboard \

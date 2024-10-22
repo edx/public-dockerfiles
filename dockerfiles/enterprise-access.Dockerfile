@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 MAINTAINER sre@edx.org
 
 
@@ -81,10 +81,10 @@ RUN ./configure && make && make install && ldconfig
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-ENV DJANGO_SETTINGS_MODULE enterprise_access.settings.production
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+ENV DJANGO_SETTINGS_MODULE=enterprise_access.settings.production
 
 EXPOSE 18270
 EXPOSE 18271
@@ -111,11 +111,11 @@ USER app
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
 CMD gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/enterprise_access/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_access.wsgi:application
 
-FROM app as newrelic
+FROM app AS newrelic
 RUN pip install newrelic
 CMD newrelic-admin run-program gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/enterprise_access/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_access.wsgi:application
 
-FROM app as devstack
+FROM app AS devstack
 USER root
 RUN pip install -r /requirements/dev.txt
 USER app

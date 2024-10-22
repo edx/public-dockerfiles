@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 
 # ENV variables for Python 3.12 support
 ARG PYTHON_VERSION=3.12
@@ -44,9 +44,9 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Use UTF-8.
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 ARG COMMON_CFG_DIR="/edx/etc"
 ARG COMMON_APP_DIR="/edx/app"
@@ -55,8 +55,8 @@ ARG REGISTRAR_VENV_DIR="${COMMON_APP_DIR}/venvs/registrar"
 ARG REGISTRAR_CODE_DIR="${REGISTRAR_APP_DIR}"
 
 ENV PATH="$REGISTRAR_VENV_DIR/bin:$PATH"
-ENV REGISTRAR_APP_DIR ${REGISTRAR_APP_DIR}
-ENV REGISTRAR_CODE_DIR ${REGISTRAR_CODE_DIR}
+ENV REGISTRAR_APP_DIR=${REGISTRAR_APP_DIR}
+ENV REGISTRAR_CODE_DIR=${REGISTRAR_CODE_DIR}
 
 # Working directory will be root of repo.
 WORKDIR ${REGISTRAR_CODE_DIR}
@@ -73,7 +73,7 @@ ENV REGISTRAR_CFG="${COMMON_CFG_DIR}/registrar.yml"
 EXPOSE 18734
 EXPOSE 18735
 
-FROM app as dev
+FROM app AS dev
 
 # fetching the requirement file that is needed
 RUN curl -L -o requirements/devstack.txt https://raw.githubusercontent.com/edx/registrar/master/requirements/devstack.txt
@@ -83,11 +83,11 @@ RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/requirements/devstack.tx
 # cloning the repository after requirements installation
 RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
-ENV DJANGO_SETTINGS_MODULE registrar.settings.devstack
+ENV DJANGO_SETTINGS_MODULE=registrar.settings.devstack
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:18734; sleep 2; done
 
-FROM app as prod
+FROM app AS prod
 
 # fetching the requirement file that is needed
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/registrar/master/requirements/production.txt
@@ -97,6 +97,6 @@ RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/requirements/production.
 # cloning the repository after requirements installation
 RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
-ENV DJANGO_SETTINGS_MODULE registrar.settings.production
+ENV DJANGO_SETTINGS_MODULE=registrar.settings.production
 
 CMD ["gunicorn", "--workers=2", "--name", "registrar", "-c", "/edx/app/registrar/registrar/docker_gunicorn_configuration.py", "--max-requests=1000", "registrar.wsgi:application"]

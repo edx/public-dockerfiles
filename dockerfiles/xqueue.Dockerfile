@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 
 # System requirements
 
@@ -12,9 +12,9 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Use UTF-8.
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 ARG COMMON_APP_DIR="/edx/app"
 ARG XQUEUE_APP_DIR="${COMMON_APP_DIR}/xqueue"
@@ -37,7 +37,7 @@ RUN touch ${XQUEUE_APP_DIR}/xqueue_env
 # Expose ports.
 EXPOSE 8040
 
-FROM app as dev
+FROM app AS dev
 
 RUN curl -L -o ${XQUEUE_CODE_DIR}/requirements/dev.txt https://raw.githubusercontent.com/openedx/xqueue/master/requirements/dev.txt
 # xqueue service config commands below
@@ -46,11 +46,11 @@ RUN pip install -r ${XQUEUE_CODE_DIR}/requirements/dev.txt
 # cloning git repo
 RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
-ENV DJANGO_SETTINGS_MODULE xqueue.devstack
+ENV DJANGO_SETTINGS_MODULE=xqueue.devstack
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:8040; sleep 2; done
 
-FROM app as production
+FROM app AS production
 
 RUN curl -L -o ${XQUEUE_APP_DIR}/requirements.txt https://raw.githubusercontent.com/openedx/xqueue/master/requirements.txt
 # xqueue service config commands below
@@ -59,7 +59,7 @@ RUN pip install -r ${XQUEUE_APP_DIR}/requirements.txt
 # cloning git repo
 RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
-ENV DJANGO_SETTINGS_MODULE xqueue.production
+ENV DJANGO_SETTINGS_MODULE=xqueue.production
 
 CMD gunicorn \
     --pythonpath=/edx/app/xqueue/xqueue \
