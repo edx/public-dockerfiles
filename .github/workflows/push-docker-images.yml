@@ -24,18 +24,18 @@ jobs:
         images:
           - { image_name: commerce-coordinator,
               name: commerce coordinator,
-              platform: linux/arm64,
-              target: abc
+              os_platform: linux/arm64,
+              target: dev
           }
           - { image_name: course-discovery,
               name: course discovery,
-              platform: linux/arm64,
+              os_platform: linux/arm64,
               target: dev,
               owning_team_email: hunia.fatima@arbisoft.com
           }
           - { image_name: credentials,
               name: credentials,
-              platform: linux/arm64,
+              os_platform: linux/arm64,
               target: dev,
               owning_team_email: hunia.fatima@arbisoft.com
           }
@@ -68,7 +68,7 @@ jobs:
         with:
           file: ./dockerfiles/${{matrix.images.image_name}}.Dockerfile
           push: true
-          no-cache: true
+          platforms: ${{ matrix.images.os_platform }}
           target: ${{ matrix.images.target }}
           tags: edxops/${{matrix.images.image_name}}-dev:${{ steps.get-tag-name.outputs.result }}
 
