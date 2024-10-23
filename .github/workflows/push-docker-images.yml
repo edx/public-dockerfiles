@@ -59,7 +59,7 @@ jobs:
           push: true
           platforms: ${{ matrix.images.platform }}
           target: ${{ matrix.images.target }}
-          tags: edxops/${{matrix.variant.tag}}:${{ steps.get-tag-name.outputs.result }}
+          tags: edxops/${{matrix.images.image_name}}-dev:${{ steps.get-tag-name.outputs.result }}
 
       - name: Send failure notification
         if: failure()
