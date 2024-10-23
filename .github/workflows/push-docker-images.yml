@@ -25,8 +25,7 @@ jobs:
           - { image_name: commerce-coordinator,
               name: commerce coordinator,
               platform: linux/arm64,
-              target: abc,
-              owning_team_email: hunia.fatima@arbisoft.com
+              target: abc
           }
           - { image_name: course-discovery,
               name: course discovery,
@@ -74,7 +73,7 @@ jobs:
           tags: edxops/${{matrix.images.image_name}}-dev:${{ steps.get-tag-name.outputs.result }}
 
       - name: Send failure notification
-        if: failure()
+        if: ${{ failure() && (matrix.images.owning_team_email) }}
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: email-smtp.us-east-1.amazonaws.com
