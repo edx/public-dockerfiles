@@ -59,8 +59,7 @@ jobs:
           push: true
           platforms: ${{ matrix.images.platform }}
           target: ${{ matrix.images.target }}
-          no-cache: true
-          tags: edxops/commerce-coordinator-dev:latest
+          tags: edxops/${{matrix.images.image_name}}-dev:${{ steps.get-tag-name.outputs.result }}
 
       - name: Send failure notification
         if: failure()
