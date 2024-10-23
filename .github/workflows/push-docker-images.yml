@@ -57,6 +57,7 @@ jobs:
         with:
           file: ./dockerfiles/${{matrix.images.image_name}}.Dockerfile
           push: true
+          no-cache: 'true'
           platforms: ${{ matrix.images.platform }}
           target: ${{ matrix.images.target }}
           tags: edxops/${{matrix.images.image_name}}-dev:${{ steps.get-tag-name.outputs.result }}
