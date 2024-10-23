@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 MAINTAINER sre@edx.org
 
 # Packages installed:
@@ -73,10 +73,10 @@ RUN virtualenv -p python${PYTHON_VERSION} $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-ENV DJANGO_SETTINGS_MODULE enterprise_subsidy.settings.production
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+ENV DJANGO_SETTINGS_MODULE=enterprise_subsidy.settings.production
 
 EXPOSE 18280
 RUN useradd -m --shell /bin/false app
@@ -102,11 +102,11 @@ USER app
 CMD gunicorn --workers=2 --name enterprise-subsidy -c /edx/app/enterprise-subsidy/enterprise_subsidy/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_subsidy.wsgi:application
 
 
-FROM app as newrelic
+FROM app AS newrelic
 RUN pip install newrelic
 CMD gunicorn --workers=2 --name enterprise-subsidy -c /edx/app/enterprise-subsidy/enterprise_subsidy/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_subsidy.wsgi:application
 
-FROM app as devstack
+FROM app AS devstack
 USER root
 RUN pip install -r requirements/dev.txt
 USER app

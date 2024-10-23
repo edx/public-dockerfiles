@@ -1,5 +1,5 @@
 FROM ubuntu:focal AS app
-MAINTAINER sre@edx.org
+LABEL org.opencontainers.image.authors="sre@edx.org"
 
 
 # Packages installed:
@@ -22,6 +22,8 @@ MAINTAINER sre@edx.org
 
 # gcc; for compiling python extensions distributed with python packages like mysql-client
 
+# make; necessary to provision the container
+
 # ENV variables for Python 3.12 support
 ARG PYTHON_VERSION=3.12
 ENV TZ=UTC
@@ -35,65 +37,67 @@ RUN apt-get update && \
 
 # If you add a package here please include a comment above describing what it is used for
 RUN apt-get update && apt-get -qy install --no-install-recommends \
+ build-essential \
  language-pack-en \
  locales \
- # libmysqlclient-dev header files needed to use native C implementation for MySQL-python for performance gains.
  libmysqlclient-dev \
- # mysqlclient>=2.2.0 requires pkg-config (https://github.com/PyMySQL/mysqlclient/issues/620)
  pkg-config \
- # mysqlclient wont install without libssl-dev
  libssl-dev \
- build-essential \
  gcc \
+ make \
+ git \
  curl \
  python3-pip \
  python${PYTHON_VERSION} \
  python${PYTHON_VERSION}-dev \
  python${PYTHON_VERSION}-distutils
 
-
-# need to use virtualenv pypi package with Python 3.12
-RUN pip install --upgrade pip setuptools
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
-RUN pip install virtualenv
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN pip install --upgrade pip setuptools
 # delete apt package lists because we do not need them inflating our image
 RUN rm -rf /var/lib/apt/lists/*
 
+# need to use virtualenv pypi package with Python 3.12
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
+RUN pip install virtualenv
+
+# Create virtual environment with Python 3.12
+ENV VIRTUAL_ENV=/edx/venvs/edx-exams
+RUN virtualenv -p python${PYTHON_VERSION} $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# python is python3
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-# Setup zoneinfo for Python 3.12
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
 RUN locale-gen en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
-ENV DJANGO_SETTINGS_MODULE=program_intent_engagement.settings.production
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+ENV DJANGO_SETTINGS_MODULE edx_exams.settings.production
 
-EXPOSE 18781
+EXPOSE 18740
 RUN useradd -m --shell /bin/false app
 
-WORKDIR /edx/app/program-intent-engagement
+WORKDIR /edx/app/edx-exams
 
-# Create required directories for requirements
 RUN mkdir -p requirements
-
-ARG INTENT_MANAGEMENT_VENV_DIR="/edx/app/venvs/program-intent-management"
-RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${INTENT_MANAGEMENT_VENV_DIR}
+# Copy the requirements explicitly even though we copy everything below
+# this prevents the image cache from busting unless the dependencies have changed.
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/edx-exams/main/requirements/production.txt
 
 # Dependencies are installed as root so they cannot be modified by the application user.
-RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/program-intent-engagement/main/requirements/production.txt
 RUN pip install -r requirements/production.txt
-
-# Clone the repository
-RUN curl -L https://github.com/edx/program-intent-engagement/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
 
 RUN mkdir -p /edx/var/log
 
+# This line is after the requirements so that changes to the code will not
+# bust the image cache
+RUN curl -L https://github.com/edx/edx-exams/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+
 # Code is owned by root so it cannot be modified by the application user.
+# So we copy it before changing users.
 USER app
 
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
-CMD gunicorn --workers=2 --name program-intent-engagement -c /edx/app/program-intent-engagement/program_intent_engagement/docker_gunicorn_configuration.py --log-file - --max-requests=1000 program_intent_engagement.wsgi:application
+CMD gunicorn --workers=2 --name edx-exams -c /edx/app/edx-exams/edx_exams/docker_gunicorn_configuration.py --log-file - --max-requests=1000 edx_exams.wsgi:application
