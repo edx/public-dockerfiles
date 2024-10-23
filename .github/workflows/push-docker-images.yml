@@ -25,7 +25,7 @@ jobs:
           - { image_name: commerce-coordinator,
               name: commerce coordinator,
               os_platform: linux/arm64,
-              target: dev
+              target: app
           }
           - { image_name: course-discovery,
               name: course discovery,
