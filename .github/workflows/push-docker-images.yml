@@ -25,7 +25,7 @@ jobs:
               image_name: commerce-coordinator,
               name: commerce coordinator,
               platform: linux/arm64,
-              target: development,
+              target: app,
               owning_team_email: hunia.fatima@arbisoft.com
           }
 
@@ -59,7 +59,8 @@ jobs:
           push: true
           platforms: ${{ matrix.images.platform }}
           target: ${{ matrix.images.target }}
-          tags: edxops/commerce-coordinator-dev:${{ steps.get-tag-name.outputs.result }}
+          no-cache: true
+          tags: edxops/commerce-coordinator-dev:latest
 
       - name: Send failure notification
         if: failure()
