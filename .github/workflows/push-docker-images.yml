@@ -22,11 +22,11 @@ jobs:
       matrix:
         images:
           - {
-              image_name: 'commerce-coordinator',
-              name: 'commerce coordinator',
+              image_name: commerce-coordinator,
+              name: commerce coordinator,
               platform: linux/arm64,
-              target: 'development',
-              owning_team_email: 'hunia.fatima@arbisoft.com'
+              target: development,
+              owning_team_email: hunia.fatima@arbisoft.com
           }
 
     steps:
@@ -59,7 +59,7 @@ jobs:
           push: true
           platforms: ${{ matrix.images.platform }}
           target: ${{ matrix.images.target }}
-          tags: edxops/${{matrix.images.image_name}}-dev:${{ steps.get-tag-name.outputs.result }}
+          tags: edxops/commerce-coordinator-dev:${{ steps.get-tag-name.outputs.result }}
 
       - name: Send failure notification
         if: failure()
