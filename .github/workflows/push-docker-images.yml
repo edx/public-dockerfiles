@@ -22,19 +22,18 @@ jobs:
       matrix:
         images:
           - {
-              image_name: commerce-coordinator,
+            image_name: commerce-coordinator,
               name: commerce coordinator,
               platform: linux/arm64,
               target: app,
               owning_team_email: hunia.fatima@arbisoft.com
-            }
-          - {
-              - image_name: course-discovery,
-              - name: course discovery,
-              - platform: linux/arm64,
-              - target: dev,
-              - owning_team_email: hunia.fatima@arbisoft.com
-            }
+          }
+          - { image_name: course-discovery,
+              name: course discovery,
+              platform: linux/arm64,
+              target: dev,
+              owning_team_email: hunia.fatima@arbisoft.com
+          }
 
     steps:
       - name: Get tag name
