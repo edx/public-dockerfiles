@@ -71,6 +71,8 @@ RUN mkdir -p /edx/var/log
 # This line is after the python requirements so that changes to the code will not
 # bust the image cache
 RUN curl -L https://github.com/openedx/credentials/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+# Download python configuration file from devstack
+RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/credentials.py
 
 # Fetch the translations into the image once the Makefile's in place
 RUN make pull_translations
