@@ -9,6 +9,10 @@ on:
   schedule:
     - cron: "0 4 * * 1-5"  # UTC Time
 
+  pull_request:
+    branches:
+      - '**'
+
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
