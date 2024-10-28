@@ -93,7 +93,6 @@ RUN useradd -m --shell /bin/false app
 WORKDIR /edx/app/enterprise-access
 
 RUN mkdir -p requirements
-RUN ls -la && echo "Listing..."
 
 RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/pip.txt
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/production.txt
