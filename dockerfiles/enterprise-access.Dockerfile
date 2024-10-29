@@ -92,13 +92,13 @@ RUN useradd -m --shell /bin/false app
 
 WORKDIR /edx/app/enterprise-access
 
-RUN mkdir -p /requirements
+RUN mkdir -p requirements
 
-RUN curl -L -o /requirements/pip.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/pip.txt
-RUN curl -L -o /requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/production.txt
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/pip.txt
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/production.txt
 # Dependencies are installed as root so they cannot be modified by the application user.
-RUN pip install -r /requirements/pip.txt
-RUN pip install -r /requirements/production.txt
+RUN pip install -r requirements/pip.txt
+RUN pip install -r requirements/production.txt
 
 RUN mkdir -p /edx/var/log
 
@@ -116,7 +116,9 @@ RUN pip install newrelic
 CMD newrelic-admin run-program gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/enterprise_access/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_access.wsgi:application
 
 FROM app AS devstack
+
 USER root
-RUN pip install -r /requirements/dev.txt
+RUN pip install -r requirements/dev.txt
+
 USER app
 CMD gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/enterprise_access/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_access.wsgi:application
