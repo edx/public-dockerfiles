@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 MAINTAINER sre@edx.org
 
 # Packages installed:
@@ -89,7 +89,7 @@ CMD ["gunicorn", "--workers=2", "--name", "enterprise_catalog", "-c", "/edx/app/
 # Create newrelic image used by the experimental docker shim. #
 ###############################################################
 # TODO: remove this after we migrate to k8s since it will serve no more purpose.
-FROM app as newrelic
+FROM app AS newrelic
 RUN pip install newrelic
 CMD ["newrelic-admin", "run-program", "gunicorn", "--workers=2", "--name", "enterprise_catalog", "-c", "/edx/app/enterprise_catalog/enterprise_catalog/enterprise_catalog/docker_gunicorn_configuration.py", "--log-file", "-", "--max-requests=1000", "enterprise_catalog.wsgi:application"]
 
@@ -98,7 +98,7 @@ CMD ["newrelic-admin", "run-program", "gunicorn", "--workers=2", "--name", "ente
 #################################
 # TODO: remove this after we migrate to k8s.  It already isn't used today, but just defer changes until absolutely
 # necessary for safety.
-FROM app as legacy_devapp
+FROM app AS legacy_devapp
 # Dev ports
 EXPOSE 18160
 EXPOSE 18161

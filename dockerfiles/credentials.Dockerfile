@@ -1,4 +1,4 @@
-FROM ubuntu:focal as base
+FROM ubuntu:focal AS base
 
 # System requirements
 # - git; Used to pull in particular requirements from github rather than pypi,
@@ -35,12 +35,12 @@ ENV PATH="$NODE_ENV/bin:$PATH"
 RUN npm install -g npm@9.x.x
 
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-ENV DJANGO_SETTINGS_MODULE credentials.settings.production
-ENV OPENEDX_ATLAS_PULL true
-ENV CREDENTIALS_CFG "minimal.yml"
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+ENV DJANGO_SETTINGS_MODULE=credentials.settings.production
+ENV OPENEDX_ATLAS_PULL=true
+ENV CREDENTIALS_CFG="minimal.yml"
 
 EXPOSE 18150
 RUN useradd -m --shell /bin/false app
@@ -94,7 +94,7 @@ CMD gunicorn --workers=2 --name credentials -c /edx/app/credentials/credentials/
 
 # We don't switch back to the app user for devstack because we need devstack users to be
 # able to update requirements and generally run things as root.
-FROM base as dev
+FROM base AS dev
 USER root
 ENV DJANGO_SETTINGS_MODULE credentials.settings.devstack
 RUN pip install -r /edx/app/credentials/credentials/requirements/dev.txt

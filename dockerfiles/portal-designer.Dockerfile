@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 MAINTAINER sre@edx.org
 
 # ENV variables for Python 3.12 support
@@ -80,7 +80,7 @@ USER app
 CMD gunicorn --workers=2 --name designer -c /edx/app/designer/designer/docker_gunicorn_configuration.py --log-file - --max-requests=1000 designer.wsgi:application
 
 # Change into dev app
-FROM app as devstack
+FROM app AS devstack
 # Install dependencies as root and revert back to application user
 USER root
 RUN pip install -r /edx/app/designer/requirements/dev.txt
