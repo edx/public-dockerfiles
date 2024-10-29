@@ -102,5 +102,4 @@ EXPOSE 18160
 EXPOSE 18161
 USER root
 RUN pip install -r requirements/dev.txt
-USER app
 CMD gunicorn --workers=2 --name enterprise_catalog -c /edx/app/enterprise-catalog/enterprise_catalog/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_catalog.wsgi:application
