@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 
 ENV DEBIAN_FRONTEND noninteractive
 # System requirements.
@@ -55,7 +55,7 @@ RUN npm install --production && ./node_modules/.bin/bower install --allow-root -
 # Expose canonical ecommerce port
 EXPOSE 18130
 
-FROM app as prod
+FROM app AS prod
 
 ENV DJANGO_SETTINGS_MODULE "ecommerce.settings.production"
 
@@ -71,7 +71,7 @@ RUN curl -L https://github.com/edx/ecommerce/archive/refs/heads/2u/main.tar.gz |
 
 CMD gunicorn --bind=0.0.0.0:18130 --workers 2 --max-requests=1000 -c ecommerce/docker_gunicorn_configuration.py ecommerce.wsgi:application
 
-FROM app as dev
+FROM app AS dev
 
 ENV DJANGO_SETTINGS_MODULE "ecommerce.settings.devstack"
 
@@ -87,5 +87,7 @@ RUN touch ${ECOMMERCE_APP_DIR}/ecommerce_env
 # We do this AFTER requirements so that the requirements cache isn't busted
 # every time any bit of code is changed.
 RUN curl -L https://github.com/openedx/ecommerce/archive/refs/heads/2u/main.tar.gz | tar -xz --strip-components=1
+
+RUN curl -L -o ${ECOMMERCE_CODE_DIR}/ecommerce/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/ecommerce.py
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:18130; sleep 2; done

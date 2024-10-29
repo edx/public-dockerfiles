@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 LABEL org.opencontainers.image.authors="sre@edx.org"
 
 

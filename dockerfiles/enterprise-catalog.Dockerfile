@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 MAINTAINER sre@edx.org
 
 # Packages installed:
@@ -50,8 +50,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
 RUN pip install virtualenv
 
-RUN mkdir -p requirements
-
 ENV VIRTUAL_ENV=/venv
 RUN virtualenv -p python$PYTHON_VERSION $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
@@ -70,6 +68,8 @@ EXPOSE 8161
 
 RUN useradd -m --shell /bin/false app
 
+WORKDIR /edx/app/enterprise-catalog
+RUN mkdir -p requirements
 
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-catalog/master/requirements/production.txt
 RUN pip install -r requirements/production.txt
@@ -82,14 +82,13 @@ RUN curl -L https://github.com/openedx/enterprise-catalog/archive/refs/heads/mas
 USER app
 
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
-CMD ["gunicorn", "--workers=2", "--name", "enterprise_catalog", "-c", "/edx/app/enterprise_catalog/enterprise_catalog/enterprise_catalog/docker_gunicorn_configuration.py", "--log-file", "-", "--max-requests=1000", "enterprise_catalog.wsgi:application"]
-
+CMD gunicorn --workers=2 --name enterprise_catalog -c /edx/app/enterprise-catalog/enterprise_catalog/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_catalog.wsgi:application
 
 ###############################################################
 # Create newrelic image used by the experimental docker shim. #
 ###############################################################
 # TODO: remove this after we migrate to k8s since it will serve no more purpose.
-FROM app as newrelic
+FROM app AS newrelic
 RUN pip install newrelic
 CMD ["newrelic-admin", "run-program", "gunicorn", "--workers=2", "--name", "enterprise_catalog", "-c", "/edx/app/enterprise_catalog/enterprise_catalog/enterprise_catalog/docker_gunicorn_configuration.py", "--log-file", "-", "--max-requests=1000", "enterprise_catalog.wsgi:application"]
 
@@ -98,11 +97,11 @@ CMD ["newrelic-admin", "run-program", "gunicorn", "--workers=2", "--name", "ente
 #################################
 # TODO: remove this after we migrate to k8s.  It already isn't used today, but just defer changes until absolutely
 # necessary for safety.
-FROM app as legacy_devapp
+FROM app AS legacy_devapp
 # Dev ports
 EXPOSE 18160
 EXPOSE 18161
 USER root
 RUN pip install -r requirements/dev.txt
 USER app
-CMD ["gunicorn", "--reload", "--workers=2", "--name", "enterprise_catalog", "-b", ":18160", "-c", "/edx/app/enterprise_catalog/enterprise_catalog/enterprise_catalog/docker_gunicorn_configuration.py", "--log-file", "-", "--max-requests=1000", "enterprise_catalog.wsgi:application"]
+CMD gunicorn --workers=2 --name enterprise_catalog -c /edx/app/enterprise-catalog/enterprise_catalog/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_catalog.wsgi:application

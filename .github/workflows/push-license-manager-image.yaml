@@ -1,4 +1,4 @@
-name: Build and Push Analytics Dashboard Image
+name: Build and Push License Manager Image
 
 on:
   workflow_dispatch:
@@ -39,20 +39,22 @@ jobs:
       - name: Build and push Dev Docker image
         uses: docker/build-push-action@v6
         with:
-          file: ./dockerfiles/edx-analytics-dashboard.Dockerfile
+          file: ./dockerfiles/license-manager.Dockerfile
           push: true
-          target: dev
-          tags: edxops/insights-dev:${{ steps.get-tag-name.outputs.result }}
+          target: app
+          tags: edxops/license-manager-dev:${{ steps.get-tag-name.outputs.result }}
+          platforms: linux/amd64,linux/arm64
 
-      - name: Send failure notification
-        if: failure()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: email-smtp.us-east-1.amazonaws.com
-          server_port: 465
-          username: ${{secrets.edx_smtp_username}}
-          password: ${{secrets.edx_smtp_password}}
-          subject: Push Image to docker.io/edxops failed in Analytics Dashboard
-          to: team-cosmonauts@edx.org
-          from: github-actions <github-actions@edx.org>
-          body: Push Image to docker.io/edxops for Analytics Dashboard failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      # Commenting the notification section temporarily as we don't have the owning team email for titans yet.
+      # - name: Send failure notification
+      #   if: failure()
+      #   uses: dawidd6/action-send-mail@v3
+      #   with:
+      #     server_address: email-smtp.us-east-1.amazonaws.com
+      #     server_port: 465
+      #     username: ${{secrets.edx_smtp_username}}
+      #     password: ${{secrets.edx_smtp_password}}
+      #     subject: Push Image to docker.io/edxops failed in License Manager Coordinator
+      #     to: team-titans@edx.org
+      #     from: github-actions <github-actions@edx.org>
+      #     body: Push Image to docker.io/edxops for License Manager Coordinator failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

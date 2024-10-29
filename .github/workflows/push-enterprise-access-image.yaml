@@ -43,6 +43,7 @@ jobs:
           push: true
           target: devstack
           tags: edxops/enterprise-access-dev:${{ steps.get-tag-name.outputs.result }}
+          platforms: linux/amd64,linux/arm64
 
       - name: Send failure notification
         if: failure()
