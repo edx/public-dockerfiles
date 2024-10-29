@@ -101,6 +101,7 @@ CMD while true; do python ./manage.py runserver 0.0.0.0:8381; sleep 2; done
 
 ###########################################################
 # Define k8s target
+
 FROM prod AS kubernetes
 ENV DISCOVERY_SETTINGS='kubernetes'
 ENV DJANGO_SETTINGS_MODULE="course_discovery.settings.$DISCOVERY_SETTINGS"
