@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 
 ARG PYTHON_VERSION=3.12
 
@@ -75,7 +75,7 @@ RUN npm install --production && ./node_modules/.bin/bower install --allow-root -
 # Expose canonical Discovery port
 EXPOSE 8381
 
-FROM app as prod
+FROM app AS prod
 
 ENV DJANGO_SETTINGS_MODULE "course_discovery.settings.production"
 
@@ -85,7 +85,7 @@ RUN DISCOVERY_CFG=minimal.yml OPENEDX_ATLAS_PULL=true make pull_translations
 
 CMD gunicorn --bind=0.0.0.0:8381 --workers 2 --max-requests=1000 -c course_discovery/docker_gunicorn_configuration.py course_discovery.wsgi:application
 
-FROM app as dev
+FROM app AS dev
 
 ENV DJANGO_SETTINGS_MODULE "course_discovery.settings.devstack"
 
@@ -101,6 +101,7 @@ CMD while true; do python ./manage.py runserver 0.0.0.0:8381; sleep 2; done
 
 ###########################################################
 # Define k8s target
-FROM prod as kubernetes
+
+FROM prod AS kubernetes
 ENV DISCOVERY_SETTINGS='kubernetes'
 ENV DJANGO_SETTINGS_MODULE="course_discovery.settings.$DISCOVERY_SETTINGS"

@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 MAINTAINER sre@edx.org
 
 
@@ -67,10 +67,10 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
-ENV DJANGO_SETTINGS_MODULE program_intent_engagement.settings.production
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
+ENV DJANGO_SETTINGS_MODULE=program_intent_engagement.settings.production
 
 EXPOSE 18781
 RUN useradd -m --shell /bin/false app

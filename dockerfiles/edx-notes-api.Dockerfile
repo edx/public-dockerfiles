@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
 
 # Packages installed:
 # git; Used to pull in particular requirements from github rather than pypi,
@@ -36,9 +36,9 @@ RUN apt-get update && \
 
 
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
 
 # ENV variables lifetime is bound to the container whereas ARGS variables lifetime is bound to the image building process only
@@ -70,9 +70,9 @@ RUN mkdir -p /edx/var/log
 
 EXPOSE 8120
 
-FROM app as dev
+FROM app AS dev
 
-ENV DJANGO_SETTINGS_MODULE "notesserver.settings.devstack"
+ENV DJANGO_SETTINGS_MODULE="notesserver.settings.devstack"
 
 # Backwards compatibility with devstack
 RUN touch "${COMMON_APP_DIR}/edx_notes_api_env"
@@ -81,10 +81,10 @@ RUN curl -L https://github.com/openedx/edx-notes-api/archive/refs/heads/master.t
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:8120; sleep 2; done
 
-FROM app as production
+FROM app AS production
 
-ENV EDXNOTES_CONFIG_ROOT /edx/etc
-ENV DJANGO_SETTINGS_MODULE "notesserver.settings.yaml_config"
+ENV EDXNOTES_CONFIG_ROOT=/edx/etc
+ENV DJANGO_SETTINGS_MODULE="notesserver.settings.yaml_config"
 
 RUN curl -L https://github.com/openedx/edx-notes-api/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
