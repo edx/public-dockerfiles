@@ -23,25 +23,26 @@ ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
 
+# software-properties-common is needed to setup Python 3.12 env
 RUN apt-get update && \
-    apt-get install -y software-properties-common && \
-    apt-add-repository -y ppa:deadsnakes/ppa && \
-    apt-get update && apt-get upgrade -qy && \
-    apt-get install \
+  apt-get install -y software-properties-common && \
+  apt-add-repository -y ppa:deadsnakes/ppa
+
+RUN apt-get update && apt-get -qy install --no-install-recommends \
     build-essential \
     language-pack-en \
     locales \
-    git \
-    curl \
     pkg-config \
     libssl-dev \
     libffi-dev \
     libsqlite3-dev \
     libmysqlclient-dev \
+    git \
+    curl \
     python3-pip \
-    python{PYTHON_VERSION} \
-    python{PYTHON_VERSION}-dev \
-    python{PYTHON_VERSION}-distutils && \
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    python${PYTHON_VERSION}-distutils && \
     rm -rf /var/lib/apt/lists/*
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
@@ -68,7 +69,7 @@ RUN useradd -m --shell /bin/false app
 
 RUN mkdir -p requirements
 
-RUN virtualenv -p python{PYTHON_VERSION} --always-copy ${NOTES_VENV_DIR}
+RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${NOTES_VENV_DIR}
 
 RUN pip install --upgrade pip setuptools
 
