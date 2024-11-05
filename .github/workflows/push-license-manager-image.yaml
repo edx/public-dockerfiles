@@ -42,7 +42,7 @@ jobs:
           file: ./dockerfiles/license-manager.Dockerfile
           push: true
           target: app
-          tags: edxops/license-manager:${{ steps.get-tag-name.outputs.result }}
+          tags: edxops/license-manager-dev:${{ steps.get-tag-name.outputs.result }}
 
       # Commenting the notification section temporarily as we don't have the owning team email for titans yet.
       # - name: Send failure notification
