@@ -7,7 +7,7 @@ FROM ubuntu:focal AS app
 # language-pack-en locales; ubuntu locale support so that system utilities have a consistent
 # language and time zone.
 
-# python3.8-dev; to install python 3.8
+# python3.12-dev; to install python 3.12
 # python3-venv; installs venv module required to create virtual environments
 
 # libssl-dev; # mysqlclient wont install without this.
@@ -17,29 +17,44 @@ FROM ubuntu:focal AS app
 
 # If you add a package here please include a comment above describing what it is used for
 
+# ENV variables for Python 3.12 support
+ARG PYTHON_VERSION=3.12
+ENV TZ=UTC
+ENV TERM=xterm-256color
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && \
     apt-get install -y software-properties-common && \
     apt-add-repository -y ppa:deadsnakes/ppa && \
     apt-get update && apt-get upgrade -qy && \
     apt-get install \
+    build-essential \
     language-pack-en \
     locales \
     git \
-    libmysqlclient-dev \
+    curl \
     pkg-config \
     libssl-dev \
-    build-essential \
-    python3.8-dev \
-    python3.8-distutils \
-    python3-virtualenv -qy && \
+    libffi-dev \
+    libsqlite3-dev \
+    libmysqlclient-dev \
+    python3-pip \
+    python{PYTHON_VERSION} \
+    python{PYTHON_VERSION}-dev \
+    python{PYTHON_VERSION}-distutils && \
     rm -rf /var/lib/apt/lists/*
 
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 RUN locale-gen en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
+# need to use virtualenv pypi package with Python 3.12
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
+RUN pip install virtualenv
 
 # ENV variables lifetime is bound to the container whereas ARGS variables lifetime is bound to the image building process only
 # Also ARGS provide us an option of compatibility of Path structure for Tutor and other OpenedX installations
@@ -51,12 +66,9 @@ ENV PATH="$NOTES_VENV_DIR/bin:$PATH"
 
 RUN useradd -m --shell /bin/false app
 
-# Install curl
-RUN apt-get update && apt-get install -y curl
-
 RUN mkdir -p requirements
 
-RUN virtualenv -p python3.8 --always-copy ${NOTES_VENV_DIR}
+RUN virtualenv -p python{PYTHON_VERSION} --always-copy ${NOTES_VENV_DIR}
 
 RUN pip install --upgrade pip setuptools
 
