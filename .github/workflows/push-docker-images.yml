@@ -3,6 +3,9 @@ name: Build and Publish Docker Images
 on:
   workflow_dispatch:
     inputs:
+      services_list:
+        description: "List of IDAs for which we want to push docker image in format 'x', 'y', 'z'..."
+        type: string
       branch:
         description: "Target branch from which the source dockerfile from image will be sourced"
 
@@ -44,10 +47,10 @@ jobs:
 #            os_platform: linux/arm64
 #            target: dev
 
-          - image_name: edx-analytics-dashboard
-            name: edx analytics dashboard
-            os_platform: linux/arm64
-            target: dev
+#          - image_name: edx-analytics-dashboard
+#            name: edx analytics dashboard
+#            os_platform: linux/arm64
+#            target: dev
 
 #          - image_name: edx-analytics-data-api
 #            name: edx analytics data api
@@ -82,20 +85,20 @@ jobs:
 #            os_platform: linux/arm64
 #            target: dev
 
-          - image_name: enterprise-access
-            name: enterprise access
-            os_platform: linux/arm64
-            target: devstack
-
-#          - image_name: enterprise-catalog
-#            name: enterprise catalog
-#            os_platform: linux/arm64
-#            target: legacy_devapp
-#
-#          - image_name: enterprise-subsidy
-#            name: enterprise subsidy
+#          - image_name: enterprise-access
+#            name: enterprise access
 #            os_platform: linux/arm64
 #            target: devstack
+
+          - image_name: enterprise-catalog
+            name: enterprise catalog
+            os_platform: linux/arm64
+            target: legacy_devapp
+#
+          - image_name: enterprise-subsidy
+            name: enterprise subsidy
+            os_platform: linux/arm64
+            target: devstack
 #
 #          - image_name: program-intent-engagement
 #            name: program intent engagement
