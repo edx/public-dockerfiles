@@ -41,6 +41,7 @@ jobs:
             images=$(jq -c '.' images-data.json)
           fi
           echo "images=$images" >> $GITHUB_OUTPUT
+          echo "$images"
         shell: bash
 
   push:
