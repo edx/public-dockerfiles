@@ -36,12 +36,12 @@ jobs:
         run: |
           selected_image=${{ github.event.inputs.image_to_build }}
           images=$(jq -c --arg selected_image "$selected_image" '. as $images | if $selected_image != "" then [$images[] | select(.name == $selected_image)] else $images end' images-data.json)
-          echo "images=$images" >> $GITHUB_ENV
+          echo images=$images >> $GITHUB_ENV
           echo "$images"
         shell: bash
       - name: Set images output
         id: images
-        run: echo "images=$(cat images-data.json)" >> $GITHUB_ENV
+        run: echo "images=$(cat images-data.json)" >> $GITHUB_OUTPUT
   push:
     runs-on: ubuntu-22.04
     continue-on-error: true
