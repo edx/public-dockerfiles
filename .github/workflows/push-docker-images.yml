@@ -27,7 +27,7 @@ jobs:
   set-matrix:
     runs-on: ubuntu-22.04
     outputs:
-      environments: ${{ steps.set-images-input.outputs.images }}
+      images: ${{ steps.set-images-input.outputs.images }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
           echo "images=$images" >> $GITHUB_ENV
         shell: bash
       - name: Set images output
-        id: environments
+        id: images
         run: echo "::set-output name=images::$(cat images-data.json)"
   push:
     runs-on: ubuntu-22.04
