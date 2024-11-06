@@ -37,12 +37,12 @@ jobs:
           image_to_build="${{ github.event.inputs.image_to_build }}"
           if [[ -n "$image_to_build" ]]; then
             images=$(jq -c --arg name "$image_to_build" '[.[] | select(.name == $name)]' images-data.json)
-            echo "${{images}}"
-            echo "images_to_build=${{images}}" >> ${{GITHUB_OUTPUT}}
+            echo "$images"
+            echo "images_to_build=$images" >> $GITHUB_OUTPUT
           else
             images=$(jq -c '.' images-data.json)
-            echo "${{images}}"
-            echo "images_to_build=${{images}}" >> ${{GITHUB_OUTPUT}}
+            echo "$images"
+            echo "images_to_build=$images" >> $GITHUB_OUTPUT
           fi
 
   push:
