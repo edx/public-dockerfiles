@@ -48,9 +48,9 @@ jobs:
     runs-on: ubuntu-22.04
     continue-on-error: true
 
-    strategy:
-      matrix:
-        images: ${{ fromJson(needs.set-matrix.outputs.images) }}
+#    strategy:
+#      matrix:
+#        images: ${{ fromJson(needs.set-matrix.outputs.images) }}
 
     steps:
       - name: Get tag name
@@ -58,6 +58,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            echo "${{needs.set-matrix.outputs.images}}"
             const tagName = "${{ github.event.inputs.branch }}" || 'latest';
             console.log('Will use tag: ' + tagName);
             return tagName;
