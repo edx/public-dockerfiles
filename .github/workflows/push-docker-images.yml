@@ -50,9 +50,9 @@ jobs:
     continue-on-error: true
     needs: [set-matrix]
 
-#    strategy:
-#      matrix:
-#        images: ${{ fromJson(needs.set-matrix.outputs.images) }}
+    strategy:
+      matrix:
+        images: ${{ fromJson(needs.set-matrix.outputs.docker_images) }}
 
     steps:
       - name: Get tag name
@@ -60,7 +60,6 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            console.log("docker images are: ${{needs.set-matrix.outputs.docker_images}}")
             const tagName = "${{ github.event.inputs.branch }}" || 'latest';
             console.log('Will use tag: ' + tagName);
             return tagName;
