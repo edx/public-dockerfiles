@@ -27,7 +27,7 @@ jobs:
   set-matrix:
     runs-on: ubuntu-22.04
     outputs:
-      docker_images: ${{ steps.set-images-input.outputs.images_to_build }}
+      docker_images: 'This is chhjhu'
     steps:
       - name: Check out code
         uses: actions/checkout@v4
