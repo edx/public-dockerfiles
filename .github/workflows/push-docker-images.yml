@@ -29,6 +29,9 @@ jobs:
     outputs:
       environments: ${{ steps.set-images-input.outputs.images }}
     steps:
+      - name: Check out code
+      - uses: actions/checkout@v4
+
       - id: set-images-input
         run: |
           selected_image=${{ github.event.inputs.image_to_build }}
