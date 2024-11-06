@@ -27,7 +27,7 @@ jobs:
   set-matrix:
     runs-on: ubuntu-22.04
     outputs:
-      docker_images: 'This is chhjhu'
+      docker_images: ${{ steps.set-images-input.outputs.images_to_build }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -48,6 +48,7 @@ jobs:
   push:
     runs-on: ubuntu-22.04
     continue-on-error: true
+    needs: [set-matrix]
 
 #    strategy:
 #      matrix:
@@ -59,8 +60,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const dockerImages = ${{ needs.set-matrix.outputs.docker_images }}
-            console.log('Docker images are: ${{dockerImages}}')
+            console.log("docker images are: ${{needs.set-matrix.outputs.docker_images}}")
             const tagName = "${{ github.event.inputs.branch }}" || 'latest';
             console.log('Will use tag: ' + tagName);
             return tagName;
