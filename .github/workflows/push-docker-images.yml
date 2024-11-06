@@ -27,7 +27,7 @@ jobs:
   set-matrix:
     runs-on: ubuntu-22.04
     outputs:
-      images: ${{ steps.set-images-input.outputs.images }}
+      docker_images: ${{ steps.set-images-input.outputs.images_to_build }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -40,8 +40,8 @@ jobs:
           else
             images=$(jq -c '.' images-data.json)
           fi
-          echo "images=$images" >> $GITHUB_OUTPUT
           echo "$images"
+          echo "images_to_build=$images" >> $GITHUB_OUTPUT
         shell: bash
 
   push:
@@ -58,7 +58,7 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            console.log("${{needs.set-matrix.outputs.images}}")
+            console.log("${{needs.set-matrix.outputs.docker_images}}")
             const tagName = "${{ github.event.inputs.branch }}" || 'latest';
             console.log('Will use tag: ' + tagName);
             return tagName;
