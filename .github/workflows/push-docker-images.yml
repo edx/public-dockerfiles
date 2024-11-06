@@ -34,14 +34,15 @@ jobs:
 
       - id: set-images-input
         run: |
-          images="${{ github.event.inputs.image_to_build }}"
+          image_to_build="${{ github.event.inputs.image_to_build }}"
           if [[ -n "$image_to_build" ]]; then
             images=$(jq -c --arg name "$image_to_build" '[.[] | select(.name == $name)]' images-data.json)
           else
             images=$(jq -c '.' images-data.json)
           fi
-          echo "images here: ${{images}}"
-          echo "images_to_build={images}" >> $GITHUB_OUTPUT
+          echo "${{images}}"
+          echo "images_to_build=${{images}}" >> ${{GITHUB_OUTPUT}}
+
   push:
     runs-on: ubuntu-22.04
     continue-on-error: true
