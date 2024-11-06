@@ -7,11 +7,9 @@ on:
         description: "Select an image that you want to build and push"
         type: choice
         options:
-          - lms
-          - cms
+          - commerce-coordinator
+          - course-discovery
           - credentials
-          - ecommerce
-          - edx-exams
       branch:
         description: "Target branch from which the source dockerfile from image will be sourced"
 
@@ -19,9 +17,9 @@ on:
     - cron: "0 4 * * 1-5"  # UTC Time
 
 #  Added for testing purposes. Will remove once the PR is finalised
-  pull_request:
-    branches:
-      - '**'
+#  pull_request:
+#    branches:
+#      - '**'
 
 jobs:
   set-matrix:

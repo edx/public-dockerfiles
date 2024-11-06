@@ -1,8 +1,8 @@
 [
   {
-    "image_name": "xqueue",
-    "name": "xqueue",
+    "image_name": "commerce-coordinator",
+    "name": "commerce coordinator",
     "os_platform": "linux/arm64",
-    "target": "dev"
+    "target": "app"
   }
 ]
