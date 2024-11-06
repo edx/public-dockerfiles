@@ -60,7 +60,7 @@ jobs:
         with:
           script: |
             const dockerImages = "${{ needs.set-matrix.outputs.docker_images }}"
-            console.log('Docker images are: ${dockerImages}')
+            console.log('Docker images are: ${{dockerImages}}')
             const tagName = "${{ github.event.inputs.branch }}" || 'latest';
             console.log('Will use tag: ' + tagName);
             return tagName;
