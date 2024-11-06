@@ -34,7 +34,7 @@ jobs:
 
       - id: set-images-input
         run: |
-          image_to_build="${{ github.event.inputs.image_to_build }}"
+          images="${{ github.event.inputs.image_to_build }}"
           if [[ -n "$image_to_build" ]]; then
             images=$(jq -c --arg name "$image_to_build" '[.[] | select(.name == $name)]' images-data.json)
           else
