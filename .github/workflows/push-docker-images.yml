@@ -59,7 +59,8 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            console.log("docker images are: ${{needs.set-matrix.outputs.docker_images}}")
+            const dockerImages = "${{ needs.set-matrix.outputs.docker_images }}"
+            console.log('Docker images are: ${dockerImages}')
             const tagName = "${{ github.event.inputs.branch }}" || 'latest';
             console.log('Will use tag: ' + tagName);
             return tagName;
