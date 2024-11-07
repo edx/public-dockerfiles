@@ -48,7 +48,7 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-RUN locale-gen en_US.UTF-8
+RUN locale-gen=en_US.UTF-8
 ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
@@ -59,7 +59,7 @@ RUN pip install virtualenv
 
 # ENV variables lifetime is bound to the container whereas ARGS variables lifetime is bound to the image building process only
 # Also ARGS provide us an option of compatibility of Path structure for Tutor and other OpenedX installations
-ARG COMMON_CFG_DIR "/edx/etc"
+ARG COMMON_CFG_DIR="/edx/etc"
 ARG COMMON_APP_DIR="/edx/app"
 ARG NOTES_APP_DIR="${COMMON_APP_DIR}/notes"
 ARG NOTES_VENV_DIR="${COMMON_APP_DIR}/venvs/notes"
@@ -100,7 +100,7 @@ CMD while true; do python ./manage.py runserver 0.0.0.0:8120; sleep 2; done
 
 FROM app AS production
 
-ENV EDXNOTES_CONFIG_ROOT=/edx/etc
+ENV EDXNOTES_CONFIG_ROOT="/edx/etc"
 ENV DJANGO_SETTINGS_MODULE="notesserver.settings.yaml_config"
 
 USER app
