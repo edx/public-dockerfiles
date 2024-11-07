@@ -52,7 +52,7 @@
     "build_args": {
       "SERVICE_VARIANT": "cms",
       "SERVICE_PORT": "18010"
-    },
+    }
   },
   {
     "dockerfile": "edx-platform",
