@@ -91,7 +91,9 @@ EXPOSE 8120
 
 FROM app AS dev
 
-ENV DJANGO_SETTINGS_MODULE="notesserver.settings.devstack"
+RUN curl -L -o ${NOTES_VENV_DIR}/notesserver/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/main/py_configuration_files/edx_notes_api.py
+
+ENV DJANGO_SETTINGS_MODULE "notesserver.settings.devstack"
 
 # Backwards compatibility with devstack
 RUN touch "${COMMON_APP_DIR}/edx_notes_api_env"

@@ -69,6 +69,8 @@ RUN pip install -r ${ECOMMERCE_CODE_DIR}/requirements/production.txt
 # every time any bit of code is changed.
 RUN curl -L https://github.com/edx/ecommerce/archive/refs/heads/2u/main.tar.gz | tar -xz --strip-components=1
 
+RUN rm ${ECOMMERCE_CODE_DIR}/ecommerce/settings/devstack.py
+
 CMD gunicorn --bind=0.0.0.0:18130 --workers 2 --max-requests=1000 -c ecommerce/docker_gunicorn_configuration.py ecommerce.wsgi:application
 
 FROM app AS dev
@@ -87,5 +89,7 @@ RUN touch ${ECOMMERCE_APP_DIR}/ecommerce_env
 # We do this AFTER requirements so that the requirements cache isn't busted
 # every time any bit of code is changed.
 RUN curl -L https://github.com/openedx/ecommerce/archive/refs/heads/2u/main.tar.gz | tar -xz --strip-components=1
+
+RUN curl -L -o ${ECOMMERCE_CODE_DIR}/ecommerce/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/main/py_configuration_files/ecommerce.py
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:18130; sleep 2; done

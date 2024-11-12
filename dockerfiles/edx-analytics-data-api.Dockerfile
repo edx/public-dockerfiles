@@ -87,7 +87,9 @@ CMD ["gunicorn" , "-b", "0.0.0.0:8100", "--pythonpath", "/edx/app/analytics_api/
 
 FROM base AS dev
 
-ENV DJANGO_SETTINGS_MODULE="analyticsdataserver.settings.devstack"
+RUN curl -L -o ${ANALYTICS_API_CODE_DIR}/analyticsdataserver/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/main/py_configuration_files/analytics_data_api.py
+
+ENV DJANGO_SETTINGS_MODULE "analyticsdataserver.settings.devstack"
 
 RUN curl -L -o requirements/dev.txt https://raw.githubusercontent.com/edx/edx-analytics-data-api/master/requirements/dev.txt
 

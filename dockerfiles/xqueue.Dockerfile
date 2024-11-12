@@ -46,7 +46,9 @@ RUN pip install -r ${XQUEUE_CODE_DIR}/requirements/dev.txt
 # cloning git repo
 RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
-ENV DJANGO_SETTINGS_MODULE=xqueue.devstack
+RUN curl -L -o ${XQUEUE_CODE_DIR}/xqueue/devstack.py https://raw.githubusercontent.com/edx/devstack/main/py_configuration_files/xqueue.py
+
+ENV DJANGO_SETTINGS_MODULE xqueue.devstack
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:8040; sleep 2; done
 
