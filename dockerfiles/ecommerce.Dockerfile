@@ -69,8 +69,6 @@ RUN pip install -r ${ECOMMERCE_CODE_DIR}/requirements/production.txt
 # every time any bit of code is changed.
 RUN curl -L https://github.com/edx/ecommerce/archive/refs/heads/2u/main.tar.gz | tar -xz --strip-components=1
 
-RUN rm ${ECOMMERCE_CODE_DIR}/ecommerce/settings/devstack.py
-
 CMD gunicorn --bind=0.0.0.0:18130 --workers 2 --max-requests=1000 -c ecommerce/docker_gunicorn_configuration.py ecommerce.wsgi:application
 
 FROM app AS dev
