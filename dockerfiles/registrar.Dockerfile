@@ -83,7 +83,7 @@ RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/requirements/devstack.tx
 # cloning the repository after requirements installation
 RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
-RUN curl -L -o ${REGISTRAR_CODE_DIR}/registrar/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/main/py_configuration_files/registrar.py
+RUN curl -L -o ${REGISTRAR_CODE_DIR}/registrar/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/registrar.py
 
 ENV DJANGO_SETTINGS_MODULE registrar.settings.devstack
 
