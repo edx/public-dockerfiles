@@ -42,7 +42,7 @@ jobs:
           file: ./dockerfiles/edx-analytics-dashboard.Dockerfile
           push: true
           target: dev
-          tags: edxops/edx-analytics-dashboard-dev:${{ steps.get-tag-name.outputs.result }}
+          tags: edxops/insights-dev:${{ steps.get-tag-name.outputs.result }}
 
       - name: Send failure notification
         if: failure()
