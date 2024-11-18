@@ -65,8 +65,6 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
 RUN pip install virtualenv
 
-RUN mkdir -p requirements
-
 # Create a virtualenv for sanity
 ENV VIRTUAL_ENV=/edx/venvs/enterprise-subsidy
 RUN virtualenv -p python${PYTHON_VERSION} $VIRTUAL_ENV
@@ -81,6 +79,7 @@ ENV DJANGO_SETTINGS_MODULE=enterprise_subsidy.settings.production
 EXPOSE 18280
 RUN useradd -m --shell /bin/false app
 WORKDIR /edx/app/enterprise-subsidy
+RUN mkdir -p requirements
 
 # Dependencies are installed as root so they cannot be modified by the application user.
 

@@ -50,8 +50,6 @@ RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
 RUN pip install virtualenv
 
-RUN mkdir -p requirements
-
 ENV VIRTUAL_ENV=/venv
 RUN virtualenv -p python$PYTHON_VERSION $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
@@ -71,6 +69,7 @@ EXPOSE 8161
 RUN useradd -m --shell /bin/false app
 
 WORKDIR /edx/app/enterprise-catalog
+RUN mkdir -p requirements
 
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-catalog/master/requirements/production.txt
 RUN pip install -r requirements/production.txt
