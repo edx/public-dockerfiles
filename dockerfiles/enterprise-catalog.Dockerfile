@@ -70,6 +70,7 @@ EXPOSE 8161
 
 RUN useradd -m --shell /bin/false app
 
+WORKDIR /edx/app/enterprise-catalog
 
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-catalog/master/requirements/production.txt
 RUN pip install -r requirements/production.txt
