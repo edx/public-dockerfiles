@@ -80,6 +80,7 @@ ENV DJANGO_SETTINGS_MODULE=enterprise_subsidy.settings.production
 
 EXPOSE 18280
 RUN useradd -m --shell /bin/false app
+WORKDIR /edx/app/enterprise-subsidy
 
 # Dependencies are installed as root so they cannot be modified by the application user.
 

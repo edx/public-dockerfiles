@@ -43,6 +43,7 @@ jobs:
           push: true
           target: app
           tags: edxops/license-manager-dev:${{ steps.get-tag-name.outputs.result }}
+          platforms: linux/amd64,linux/arm64
 
       # Commenting the notification section temporarily as we don't have the owning team email for titans yet.
       # - name: Send failure notification
