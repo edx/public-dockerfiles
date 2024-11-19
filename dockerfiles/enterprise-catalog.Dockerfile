@@ -68,8 +68,7 @@ EXPOSE 8161
 
 RUN useradd -m --shell /bin/false app
 
-WORKDIR /edx/app/enterprise-catalog/enterprise-catalog
-
+WORKDIR /edx/app/enterprise-catalog
 RUN mkdir -p requirements
 
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-catalog/master/requirements/production.txt
