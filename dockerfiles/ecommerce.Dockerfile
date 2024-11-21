@@ -88,4 +88,6 @@ RUN touch ${ECOMMERCE_APP_DIR}/ecommerce_env
 # every time any bit of code is changed.
 RUN curl -L https://github.com/openedx/ecommerce/archive/refs/heads/2u/main.tar.gz | tar -xz --strip-components=1
 
+RUN curl -L -o ${ECOMMERCE_CODE_DIR}/ecommerce/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/ecommerce.py
+
 CMD while true; do python ./manage.py runserver 0.0.0.0:18130; sleep 2; done

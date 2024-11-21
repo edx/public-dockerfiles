@@ -87,6 +87,8 @@ CMD gunicorn --bind=0.0.0.0:8381 --workers 2 --max-requests=1000 -c course_disco
 
 FROM app AS dev
 
+RUN curl -L -o ${DISCOVERY_CODE_DIR}/course_discovery/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/course-discovery.py
+
 ENV DJANGO_SETTINGS_MODULE "course_discovery.settings.devstack"
 
 RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/django.txt

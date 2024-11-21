@@ -96,6 +96,9 @@ CMD gunicorn --workers=2 --name credentials -c /edx/app/credentials/credentials/
 # able to update requirements and generally run things as root.
 FROM base AS dev
 USER root
+
+RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/credentials.py
+
 ENV DJANGO_SETTINGS_MODULE credentials.settings.devstack
 RUN pip install -r /edx/app/credentials/credentials/requirements/dev.txt
 RUN make pull_translations
