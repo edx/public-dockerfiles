@@ -96,6 +96,7 @@ RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx
 RUN pip install --no-cache-dir -r requirements/production.txt
 
 RUN curl -L https://github.com/edx/license-manager/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+RUN curl -L -o license_manager/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/license_manager.py
 
 RUN mkdir -p /edx/var/log
 
@@ -112,10 +113,9 @@ RUN pip install newrelic
 CMD newrelic-admin run-program gunicorn --workers=2 --name license_manager -c /edx/app/license_manager/license_manager/docker_gunicorn_configuration.py --log-file - --max-requests=1000 license_manager.wsgi:application
 
 
-FROM app as devstack
+FROM app as dev
 USER root
 RUN pip install -r /edx/app/license_manager/requirements/dev.txt
-USER app
 CMD gunicorn --reload --workers=2 --name license_manager -c /edx/app/license_manager/license_manager/docker_gunicorn_configuration.py --log-file - --max-requests=1000 license_manager.wsgi:application
 
 
@@ -125,5 +125,4 @@ EXPOSE 18170
 EXPOSE 18171
 USER root
 RUN pip install -r /edx/app/license_manager/requirements/dev.txt
-USER app
 CMD gunicorn --reload --workers=2 --name license_manager -c /edx/app/license_manager/license_manager/docker_gunicorn_configuration.py --log-file - --max-requests=1000 license_manager.wsgi:application
