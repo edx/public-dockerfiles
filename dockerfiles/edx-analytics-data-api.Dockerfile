@@ -87,10 +87,6 @@ CMD ["gunicorn" , "-b", "0.0.0.0:8100", "--pythonpath", "/edx/app/analytics_api/
 
 FROM base AS dev
 
-RUN curl -L -o ${ANALYTICS_API_CODE_DIR}/analyticsdataserver/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/analytics_data_api.py
-
-ENV DJANGO_SETTINGS_MODULE "analyticsdataserver.settings.devstack"
-
 RUN curl -L -o requirements/dev.txt https://raw.githubusercontent.com/edx/edx-analytics-data-api/master/requirements/dev.txt
 
 RUN pip install -r ${ANALYTICS_API_CODE_DIR}/requirements/dev.txt
@@ -99,6 +95,10 @@ RUN pip install -r ${ANALYTICS_API_CODE_DIR}/requirements/dev.txt
 # We do this AFTER requirements so that the requirements cache isn't busted
 # every time any bit of code is changed.
 RUN curl -L https://github.com/edx/edx-analytics-data-api/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+
+RUN curl -L -o ${ANALYTICS_API_CODE_DIR}/analyticsdataserver/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/analytics_data_api.py
+
+ENV DJANGO_SETTINGS_MODULE "analyticsdataserver.settings.devstack"
 
 # Devstack related step for backwards compatibility
 RUN touch /edx/app/${ANALYTICS_API_SERVICE_NAME}/${ANALYTICS_API_SERVICE_NAME}_env
