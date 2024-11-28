@@ -41,7 +41,7 @@ jobs:
         with:
           file: ./dockerfiles/license-manager.Dockerfile
           push: true
-          target: app
+          target: dev
           tags: edxops/license-manager-dev:${{ steps.get-tag-name.outputs.result }}
           platforms: linux/amd64,linux/arm64
 
