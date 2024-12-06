@@ -14,33 +14,47 @@ MAINTAINER sre@edx.org
 # python3-pip; install pip to install application requirements.txt files
 # python; ubuntu doesnt ship with python, so this is the python we will use to run the application
 
+ENV TZ=UTC
+ENV TERM=xterm-256color
+ENV DEBIAN_FRONTEND=noninteractive
+ARG PYTHON_VERSION=3.12
+
 # If you add a package here please include a comment above describing what it is used for
+
+RUN apt-get update && \
+  apt-get install -y software-properties-common && \
+  apt-add-repository -y ppa:deadsnakes/ppa
+
 RUN apt-get update && apt-get -qy install --no-install-recommends \
- gcc \
- curl \
- git \
+ build-essential \
  language-pack-en \
+ locales \
+ curl \
+ pkg-config \
  libmysqlclient-dev \
  libssl-dev \
- locales \
- pkg-config \
- python3-dev \
- python3-pip \
- python3.8
+ libffi-dev \
+ libsqlite3-dev \
+ git \
+ wget \
+ python3.12 \
+ python3.12-dev \
+ python3.12-distutils \
+ python3-pip
 
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN pip install virtualenv
 
-RUN pip install --upgrade pip setuptools
+ENV VIRTUAL_ENV=/venv
+RUN virtualenv -p python$PYTHON_VERSION $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Delete apt package lists because we do not need them inflating our image
-RUN rm -rf /var/lib/apt/lists/*
-
-RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN pip install pip==24.0 setuptools==69.5.1
 
 RUN locale-gen en_US.UTF-8
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US:en
-ENV LC_ALL=en_US.UTF-8
-
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 ENV DJANGO_SETTINGS_MODULE=commerce_coordinator.settings.production
 
 EXPOSE 8140
