@@ -67,7 +67,7 @@ RUN pip install  --no-cache-dir -r requirements/production.txt
 
 RUN curl -L https://github.com/edx/edx-analytics-dashboard/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
-RUN curl -L -o ${INSIGHTS_CODE_DIR}/analytics_dashboard/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/course-discovery.py
+RUN curl -L -o ${INSIGHTS_CODE_DIR}/analytics_dashboard/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/analytics_dashboard.py
 
 RUN nodeenv ${INSIGHTS_NODEENV_DIR} --node=18.20.2 --prebuilt \
   && npm install -g npm@10.5.x
