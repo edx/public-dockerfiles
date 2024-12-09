@@ -2,7 +2,7 @@ FROM ubuntu:focal AS app
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG PYTHON_VERSION=3.8
+ARG PYTHON_VERSION=3.12
 
 # Packages installed:
 
@@ -15,7 +15,6 @@ RUN apt-get update && \
   language-pack-en \
   build-essential \
   python${PYTHON_VERSION}-dev \
-  python${PYTHON_VERSION}-distutils \
   libmysqlclient-dev \
   pkg-config \
   libssl-dev \
