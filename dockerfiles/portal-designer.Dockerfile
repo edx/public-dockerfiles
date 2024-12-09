@@ -28,8 +28,7 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  curl \
  python3-pip \
  python${PYTHON_VERSION} \
- python${PYTHON_VERSION}-dev \
- python${PYTHON_VERSION}-distutils
+ python${PYTHON_VERSION}-dev
 
 RUN pip install --upgrade pip setuptools
 # delete apt package lists because we do not need them inflating our image

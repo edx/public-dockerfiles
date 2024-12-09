@@ -26,8 +26,7 @@ RUN apt-get install -qy \
 	curl \
 	python3-pip \
 	python${PYTHON_VERSION} \
-	python${PYTHON_VERSION}-dev \
-	python${PYTHON_VERSION}-distutils
+	python${PYTHON_VERSION}-dev
 
 # need to use virtualenv pypi package with Python 3.12
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
