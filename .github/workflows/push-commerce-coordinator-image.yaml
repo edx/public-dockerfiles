@@ -8,7 +8,7 @@ on:
 
   schedule:
     - cron: "0 4 * * 1-5"  # UTC Time
-
+  
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
