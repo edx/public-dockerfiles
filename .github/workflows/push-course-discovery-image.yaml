@@ -6,7 +6,6 @@ on:
       branch:
         description: "Target branch from which the source dockerfile from image will be sourced"
 
-
   schedule:
     - cron: "0 4 * * 1-5"  # UTC Time
 
