@@ -53,8 +53,7 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  libsqlite3-dev \
  python3-pip \
  python${PYTHON_VERSION} \
- python${PYTHON_VERSION}-dev \
- python${PYTHON_VERSION}-distutils
+ python${PYTHON_VERSION}-dev
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
