@@ -39,7 +39,6 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  wget \
  python3.12 \
  python3.12-dev \
- python3.12-distutils \
  python3-pip
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
