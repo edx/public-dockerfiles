@@ -8,8 +8,6 @@ on:
 
   schedule:
     - cron: "0 4 * * 1-5"  # UTC Time
-  
-  pull_request:
 
 jobs:
   build-and-push-image:
@@ -44,7 +42,7 @@ jobs:
           file: ./dockerfiles/edx-analytics-dashboard.Dockerfile
           push: true
           target: dev
-          tags: edxops/insights-dev:test
+          tags: edxops/insights-dev:${{ steps.get-tag-name.outputs.result }}
 
       - name: Send failure notification
         if: failure()
