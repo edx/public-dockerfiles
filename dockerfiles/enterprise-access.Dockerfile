@@ -118,5 +118,4 @@ FROM app AS devstack
 USER root
 RUN pip install -r requirements/dev.txt
 
-USER app
 CMD gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/enterprise_access/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_access.wsgi:application
