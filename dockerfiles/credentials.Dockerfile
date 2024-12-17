@@ -1,4 +1,4 @@
-FROM ubuntu:noble AS base
+FROM ubuntu:focal AS base
 
 # System requirements
 # - git; Used to pull in particular requirements from github rather than pypi,
@@ -30,9 +30,9 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # Create Node env
 RUN pip install nodeenv
 ENV NODE_ENV=/edx/app/credentials/nodeenvs/credentials
-RUN nodeenv $NODE_ENV --node=20.17.0 --prebuilt
+RUN nodeenv $NODE_ENV --node=18.17.1 --prebuilt
 ENV PATH="$NODE_ENV/bin:$PATH"
-RUN npm install -g npm@10.x.x
+RUN npm install -g npm@9.x.x
 
 RUN locale-gen en_US.UTF-8
 ENV LANG=en_US.UTF-8
@@ -99,7 +99,7 @@ USER root
 
 RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/credentials.py
 
-ENV DJANGO_SETTINGS_MODULE=credentials.settings.devstack
+ENV DJANGO_SETTINGS_MODULE credentials.settings.devstack
 RUN pip install -r /edx/app/credentials/credentials/requirements/dev.txt
 RUN make pull_translations
 
