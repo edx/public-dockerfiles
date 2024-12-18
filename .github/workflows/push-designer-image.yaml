@@ -9,9 +9,6 @@ on:
   schedule:
     - cron: "0 4 * * 1-5"  # UTC Time
 
-  pull_request:
-    branches: [ main ]
-
 jobs:
   build-and-push-image:
     runs-on: ubuntu-latest
@@ -48,15 +45,15 @@ jobs:
           tags: edxops/designer-dev:${{ steps.get-tag-name.outputs.result }}
           platforms: linux/amd64,linux/arm64
 
-#      - name: Send failure notification
-#        if: failure()
-#        uses: dawidd6/action-send-mail@v3
-#        with:
-#          server_address: email-smtp.us-east-1.amazonaws.com
-#          server_port: 465
-#          username: ${{secrets.edx_smtp_username}}
-#          password: ${{secrets.edx_smtp_password}}
-#          subject: Push Image to docker.io/edxops failed in credentials
-#          to: team-cosmonauts@edx.org
-#          from: github-actions <github-actions@edx.org>
-#          body: Push Image to docker.io/edxops for credentials failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - name: Send failure notification
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: email-smtp.us-east-1.amazonaws.com
+          server_port: 465
+          username: ${{secrets.edx_smtp_username}}
+          password: ${{secrets.edx_smtp_password}}
+          subject: Push Image to docker.io/edxops failed in credentials
+          to: team-cosmonauts@edx.org
+          from: github-actions <github-actions@edx.org>
+          body: Push Image to docker.io/edxops for credentials failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
