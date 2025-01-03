@@ -106,10 +106,12 @@ RUN python3.11 -m venv "${VIRTUAL_ENV}"
 RUN mkdir -p requirements/edx
 RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/pip.txt
 RUN curl -L -o requirements/edx/base.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/edx/base.txt
+RUN curl -L -o requirements/edx/assets.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/edx/assets.txt
 
 
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/edx/base.txt
+RUN pip install -r requirements/edx/assets.txt
 
 # Install node and npm
 RUN nodeenv /edx/app/edxapp/nodeenv --node=18.19.0 --prebuilt
