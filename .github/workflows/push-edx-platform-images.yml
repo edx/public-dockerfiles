@@ -1,6 +1,9 @@
 name: Push edx-platform Docker Images
 
 on:
+  pull_request:
+    branches:
+      - '**'
   workflow_dispatch:
     inputs:
       branch:
