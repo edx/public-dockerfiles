@@ -1,6 +1,9 @@
 name: Build and Publish Docker Images
 
 on:
+  pull_request:
+    branches:
+      - '**'
   workflow_dispatch:
     inputs:
       image_to_build:
