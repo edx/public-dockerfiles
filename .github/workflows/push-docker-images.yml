@@ -1,0 +1,110 @@
+name: Build and Publish Docker Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_to_build:
+        description: "Select an image that you want to build and push"
+        type: choice
+        options:
+          - commerce coordinator
+          - course discovery
+          - credentials
+          - ecommerce
+          - edx analytics data api
+          - edx exams
+          - cms
+          - lms
+          - edx notes api
+          - enterprise access
+          - enterprise catalog
+          - enterprise subsidy
+          - program intent engagement
+          - registrar
+          - xqueue
+          - portal designer
+          - license manager
+      branch:
+        description: "Target branch from which the source dockerfile from image will be sourced"
+        default: "main"
+
+  schedule:
+    - cron: "0 4 * * 1-5"  # UTC Time
+
+jobs:
+  set-matrix:
+    runs-on: ubuntu-22.04
+    outputs:
+      docker_images: ${{ steps.set-images-input.outputs.images_to_build }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - id: set-images-input
+        run: |
+          image_to_build="${{ github.event.inputs.image_to_build }}"
+          if [[ -n "$image_to_build" ]]; then
+            images=$(jq -c --arg name "$image_to_build" '[.[] | select(.name == $name)]' images-data.json)
+            echo "$images"
+            echo "images_to_build=$images" >> $GITHUB_OUTPUT
+          else
+            images=$(jq -c '.' images-data.json)
+            echo "$images"
+            echo "images_to_build=$images" >> $GITHUB_OUTPUT
+          fi
+  push:
+    runs-on: ubuntu-22.04
+    continue-on-error: true
+    needs: [set-matrix]
+
+    strategy:
+      matrix:
+        images: ${{ fromJson(needs.set-matrix.outputs.docker_images) }}
+
+    steps:
+      - name: Get publish date
+        id: get-publish-date
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const date = new Date();
+            const year = date.getUTCFullYear();
+            const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+            const day = String(date.getUTCDate()).padStart(2, '0');
+            const dateTag = `${year}-${month}-${day}`;
+            return dateTag
+          result-encoding: string
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push Dev Docker image
+        uses: docker/build-push-action@v6
+        with:
+          file: ./dockerfiles/${{matrix.images.dockerfile || matrix.images.image_name}}.Dockerfile
+          push: true
+          platforms: ${{ matrix.images.os_platform }}
+          target: ${{ matrix.images.target }}
+          tags: edxops/${{matrix.images.image_name}}-dev:${{ steps.get-publish-date.outputs.result }}
+
+      - name: Send failure notification
+        if: ${{ failure() && (matrix.images.owning_team_email) }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: email-smtp.us-east-1.amazonaws.com
+          server_port: 465
+          username: ${{secrets.edx_smtp_username}}
+          password: ${{secrets.edx_smtp_password}}
+          subject: Push Image to docker.io/edxops failed in ${{matrix.images.name}}
+          to: ${{matrix.images.owning_team_email}}
+          from: github-actions <github-actions@edx.org>
+          body: Push Image to docker.io/edxops for ${{matrix.images.name}} failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
