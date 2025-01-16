@@ -26,6 +26,7 @@ on:
           - xqueue
           - portal designer
           - license manager
+          - codejail
       branch:
         description: "Target branch from which the source dockerfile from image will be sourced"
         default: "main"
