@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:noble as app
 
 # Packages installed:
 
@@ -9,22 +9,12 @@ FROM ubuntu:focal as app
 
 # python3-pip; install pip to install application requirements.txt files
 
-# libmysqlclient-dev; to install header files needed to use native C implementation for
-# MySQL-python for performance gains.
-
-# libssl-dev; # mysqlclient wont install without this.
-
 # python3-dev; to install header files for python extensions; much wheel-building depends on this
-
-# gcc; for compiling python extensions distributed with python packages like mysql-client
 
 # If you add a package here please include a comment above describing what it is used for
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -qy install --no-install-recommends \
  language-pack-en locales \
- python3.12 python3-dev python3-pip \
- # The mysqlclient Python package has install-time dependencies
- libmysqlclient-dev libssl-dev pkg-config \
- gcc
+ python3.12 python3-dev python3-pip
 
 
 RUN pip install --upgrade pip setuptools
@@ -41,7 +31,7 @@ ENV LC_ALL en_US.UTF-8
 EXPOSE 18030
 RUN useradd -m --shell /bin/false app
 
-WORKDIR /edx/app/codejail-service
+WORKDIR /edx/app/codejail
 
 FROM app as prod
 
@@ -49,7 +39,7 @@ ENV DJANGO_SETTINGS_MODULE codejail_service.settings.production
 
 # Copy the requirements explicitly even though we copy everything below
 # this prevents the image cache from busting unless the dependencies have changed.
-COPY requirements/production.txt /edx/app/codejail-service/requirements/production.txt
+COPY requirements/production.txt /edx/app/codejail/requirements/production.txt
 
 # Dependencies are installed as root so they cannot be modified by the application user.
 RUN pip install -r requirements/production.txt
@@ -61,11 +51,11 @@ RUN mkdir -p /edx/var/log
 USER app
 
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
-CMD gunicorn --workers=2 --name codejail-service -c /edx/app/codejail-service/codejail_service/docker_gunicorn_configuration.py --log-file - --max-requests=1000 codejail_service.wsgi:application
+CMD gunicorn --workers=2 --name codejail -c /edx/app/codejail/codejail_service/docker_gunicorn_configuration.py --log-file - --max-requests=1000 codejail_service.wsgi:application
 
 # This line is after the requirements so that changes to the code will not
 # bust the image cache
-COPY . /edx/app/codejail-service
+COPY . /edx/app/codejail
 
 FROM app as dev
 
@@ -73,12 +63,12 @@ ENV DJANGO_SETTINGS_MODULE codejail_service.settings.devstack
 
 # Copy the requirements explicitly even though we copy everything below
 # this prevents the image cache from busting unless the dependencies have changed.
-COPY requirements/dev.txt /edx/app/codejail-service/requirements/dev.txt
+COPY requirements/dev.txt /edx/app/codejail/requirements/dev.txt
 
 RUN pip install -r requirements/dev.txt
 
 # After the requirements so changes to the code will not bust the image cache
-COPY . /edx/app/codejail-service
+COPY . /edx/app/codejail
 
 # Devstack related step for backwards compatibility
 RUN touch codejail_service/codejail_service_env
