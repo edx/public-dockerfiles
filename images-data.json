@@ -37,8 +37,19 @@
   },
   {
     "dockerfile": "edx-platform",
-    "image_name": "cms-dev",
+    "image_name": "cms",
     "name": "cms",
+    "os_platform": "linux/amd64,linux/arm64",
+    "target": "production",
+    "build_args": {
+      "SERVICE_VARIANT": "cms",
+      "SERVICE_PORT": "18010"
+    }
+  },
+  {
+    "dockerfile": "edx-platform",
+    "image_name": "cms-dev",
+    "name": "cms-dev",
     "os_platform": "linux/amd64,linux/arm64",
     "target": "development",
     "build_args": {
@@ -48,8 +59,19 @@
   },
   {
     "dockerfile": "edx-platform",
-    "image_name": "lms-dev",
+    "image_name": "lms",
     "name": "lms",
+    "os_platform": "linux/amd64,linux/arm64",
+    "target": "production",
+    "build_args": {
+      "SERVICE_VARIANT": "lms",
+      "SERVICE_PORT": "18000"
+    }
+  },
+  {
+    "dockerfile": "edx-platform",
+    "image_name": "lms-dev",
+    "name": "lms-dev",
     "os_platform": "linux/amd64,linux/arm64",
     "target": "development",
     "build_args": {
