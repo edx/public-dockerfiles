@@ -68,7 +68,7 @@ FROM app AS dev
 RUN /venv/bin/pip-sync requirements/dev.txt
 RUN python${PYVER} -m compileall /venv
 
-# After the requirements so changes to the code will not bust the image cache
+# Add code changes after deps installation so it won't bust the image cache
 ADD https://github.com/${GITHUB_REPO}.git#${VERSION} .
 RUN python${PYVER} -m compileall /app
 
@@ -81,7 +81,7 @@ FROM app AS prod
 RUN /venv/bin/pip-sync requirements/base.txt
 RUN python${PYVER} -m compileall /venv
 
-# After the requirements so changes to the code will not bust the image cache
+# Add code changes after deps installation so it won't bust the image cache
 ADD https://github.com/${GITHUB_REPO}.git#${VERSION} .
 RUN python${PYVER} -m compileall /app
 
