@@ -133,5 +133,11 @@
     "name": "license manager",
     "os_platform": "linux/amd64,linux/arm64",
     "target": "dev"
+  },
+  {
+    "image_name": "codejail",
+    "name": "codejail",
+    "os_platform": "linux/amd64,linux/arm64",
+    "target": "dev"
   }
 ]
