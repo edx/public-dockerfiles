@@ -96,7 +96,9 @@ jobs:
           push: true
           platforms: ${{ matrix.images.os_platform }}
           target: ${{ matrix.images.target }}
-          tags: edxops/${{matrix.images.image_name}}-dev:${{ steps.get-publish-date.outputs.result }}
+          tags: |
+            edxops/${{matrix.images.image_name}}-dev:${{ steps.get-publish-date.outputs.result }}
+            edxops/${{matrix.images.image_name}}-dev:latest
 
       - name: Send failure notification
         if: ${{ failure() && (matrix.images.owning_team_email) }}
