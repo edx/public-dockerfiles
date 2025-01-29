@@ -3,37 +3,44 @@
     "image_name": "commerce-coordinator",
     "name": "commerce coordinator",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "app"
+    "target": "app",
+    "owning_team_email": "sonic-team@2u.com"
+
   },
   {
     "image_name": "course-discovery",
     "name": "course discovery",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "dev"
+    "target": "dev",
+    "owning_team_email": "course-discovery@2u-internal.opsgenie.net"
   },
   {
     "image_name": "credentials",
     "name": "credentials",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "dev"
+    "target": "dev",
+    "owning_team_email": "aperture@2u-internal.opsgenie.net"
   },
   {
     "image_name": "ecommerce",
     "name": "ecommerce",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "dev"
+    "target": "dev",
+    "owning_team_email": "sonic-team@2u.com"
   },
   {
     "image_name": "edx-analytics-data-api",
     "name": "edx analytics data api",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "dev"
+    "target": "dev",
+    "owning_team_email": "team-cosmonauts@edx.org"
   },
   {
     "image_name": "edx-exams",
     "name": "edx exams",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "app"
+    "target": "app",
+    "owning_team_email": "team-cosmonauts@edx.org"
   },
   {
     "dockerfile": "edx-platform",
@@ -55,7 +62,8 @@
     "build_args": {
       "SERVICE_VARIANT": "cms",
       "SERVICE_PORT": "18010"
-    }
+    },
+    "owning_team_email": "arch-bom@edx.org"
   },
   {
     "dockerfile": "edx-platform",
@@ -77,62 +85,72 @@
     "build_args": {
       "SERVICE_VARIANT": "lms",
       "SERVICE_PORT": "18000"
-    }
+    },
+    "owning_team_email": "arch-bom@edx.org"
   },
   {
     "image_name": "edx-notes-api",
     "name": "edx notes api",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "dev"
+    "target": "dev",
+    "owning_team_email": "aurora-docker-alerts@2u-internal.opsgenie.net"
   },
   {
     "image_name": "enterprise-access",
     "name": "enterprise access",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "devstack"
+    "target": "devstack",
+    "owning_team_email": "enterprise_alerts@2u-internal.opsgenie.net"
   },
   {
     "image_name": "enterprise-catalog",
     "name": "enterprise catalog",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "legacy_devapp"
+    "target": "legacy_devapp",
+    "owning_team_email": "enterprise_alerts@2u-internal.opsgenie.net"
   },
   {
     "image_name": "enterprise-subsidy",
     "name": "enterprise subsidy",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "devstack"
+    "target": "devstack",
+    "owning_team_email": "enterprise_alerts@2u-internal.opsgenie.net"
   },
   {
     "image_name": "program-intent-engagement",
     "name": "program intent engagement",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "app"
+    "target": "app",
+    "owning_team_email": "team-cosmonauts@edx.org"
   },
   {
     "image_name": "registrar",
     "name": "registrar",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "dev"
+    "target": "dev",
+    "owning_team_email": "team-cosmonauts@edx.org"
   },
   {
     "image_name": "xqueue",
     "name": "xqueue",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "dev"
+    "target": "dev",
+    "owning_team_email": "aurora-docker-alerts@2u-internal.opsgenie.net"
   },
   {
     "dockerfile": "portal-designer",
     "image_name": "designer-dev",
     "name": "portal designer",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "devstack"
+    "target": "devstack",
+    "owning_team_email": "team-cosmonauts@edx.org"
   },
   {
     "image_name": "license-manager",
     "name": "license manager",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "dev"
+    "target": "dev",
+    "owning_team_email": "enterprise_alerts@2u-internal.opsgenie.net"
   },
   {
     "image_name": "codejail",

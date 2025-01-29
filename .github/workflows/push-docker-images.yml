@@ -112,4 +112,4 @@ jobs:
           subject: Push Image to docker.io/edxops failed in ${{matrix.images.name}}
           to: ${{matrix.images.owning_team_email}}
           from: github-actions <github-actions@edx.org>
-          body: Push Image to docker.io/edxops for ${{matrix.images.name}} failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          body: Push Image to docker.io/edxops for ${{matrix.images.name}} failed! For details see "github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}. Please refer to this document for troubleshooting guidelines https://2u-internal.atlassian.net/wiki/spaces/AT/pages/1648787501/Troubleshooting+guidelines+in+case+failure+to+publish+docker+image"
