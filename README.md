@@ -4,7 +4,7 @@ Under the [epic](https://github.com/edx/public-dockerfiles/issues/12) to remove 
 
 ## Overview
 
-This respoitory aims to streamline all the dockerfiles and docker images publishing from a single source. Images for the following services are included in this repo. 
+This repository aims to streamline all the dockerfiles and docker images publishing from a single source. Images for the following services are included in this repo. 
 
 - commerce-coordinator
 - code-jail
