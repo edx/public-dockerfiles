@@ -55,18 +55,6 @@
   },
   {
     "dockerfile": "edx-platform",
-    "image_name": "cms-production",
-    "name": "cms-production",
-    "os_platform": "linux/amd64,linux/arm64",
-    "target": "production",
-    "build_args": {
-      "SERVICE_VARIANT": "cms",
-      "SERVICE_PORT": "18010"
-    },
-    "owning_team_email": "arch-bom@edx.org"
-  },
-  {
-    "dockerfile": "edx-platform",
     "image_name": "lms",
     "name": "lms",
     "os_platform": "linux/amd64,linux/arm64",
@@ -75,18 +63,6 @@
       "SERVICE_VARIANT": "lms",
       "SERVICE_PORT": "18000"
     }
-  },
-  {
-    "dockerfile": "edx-platform",
-    "image_name": "lms-production",
-    "name": "lms-production",
-    "os_platform": "linux/amd64,linux/arm64",
-    "target": "production",
-    "build_args": {
-      "SERVICE_VARIANT": "lms",
-      "SERVICE_PORT": "18000"
-    },
-    "owning_team_email": "arch-bom@edx.org"
   },
   {
     "image_name": "edx-notes-api",
