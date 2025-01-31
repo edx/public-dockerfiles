@@ -57,9 +57,19 @@ RUN python${PYVER} -m venv /venv && \
   /venv/bin/pip install -r /app/requirements/pip-tools.txt
 
 EXPOSE 8080
+CMD /venv/bin/gunicorn -c /app/codejail_service/docker_gunicorn_configuration.py \
+    --bind '0.0.0.0:8080' --workers=10 --max-requests=1000 --name codejail \
+    codejail_service.wsgi:application
 
 
 FROM app AS dev
+
+# Developers will want some additional packages for interactive debugging.
+RUN apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install \
+    --quiet --yes --no-install-recommends \
+    make less nano emacs-nox && \
+  rm -rf /var/lib/apt/lists/*
 
 RUN /venv/bin/pip-sync requirements/dev.txt
 RUN python${PYVER} -m compileall /venv
@@ -68,8 +78,8 @@ RUN python${PYVER} -m compileall /venv
 ADD https://github.com/${GITHUB_REPO}.git#${VERSION} .
 RUN python${PYVER} -m compileall /app
 
-USER app
-CMD echo $PATH; while true; do /venv/bin/python ./manage.py runserver 0.0.0.0:8080; sleep 2; done
+# Set up virtualenv for developer
+ENV PATH="/venv/bin:$PATH"
 
 
 FROM app AS prod
@@ -81,7 +91,5 @@ RUN python${PYVER} -m compileall /venv
 ADD https://github.com/${GITHUB_REPO}.git#${VERSION} .
 RUN python${PYVER} -m compileall /app
 
+# Drop to unprivileged user for running service
 USER app
-CMD /venv/bin/gunicorn -c /app/codejail_service/docker_gunicorn_configuration.py \
-    --bind '0.0.0.0:8080' --workers=2 --max-requests=1000 --name codejail \
-    codejail_service.wsgi:application
