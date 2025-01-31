@@ -65,14 +65,11 @@ CMD /venv/bin/gunicorn -c /app/codejail_service/docker_gunicorn_configuration.py
 FROM app AS dev
 
 # Developers will want some additional packages for interactive debugging.
-RUN <<EOF
-set -eu
-apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install  \
-  --quiet --yes --no-install-recommends \
-  make less nano emacs-nox
-rm -rf /var/lib/apt/lists/*
-EOF
+RUN apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install \
+    --quiet --yes --no-install-recommends \
+    make less nano emacs-nox && \
+  rm -rf /var/lib/apt/lists/*
 
 RUN /venv/bin/pip-sync requirements/dev.txt
 RUN python${PYVER} -m compileall /venv
