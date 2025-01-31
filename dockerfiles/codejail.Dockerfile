@@ -26,15 +26,10 @@ ARG PYVER=3.12
 # - python*: A specific version of Python
 # - python*-dev: Header files for python extensions, required by many source wheels
 # - python*-venv: Allow creation of virtualenvs
-RUN <<EOF
-apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install \
-  --quiet --yes --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --quiet --yes --no-install-recommends \
   language-pack-en locales \
-  python${PYVER} python${PYVER}-dev python${PYVER}-venv
-# If you add a package, please add a comment above explaining why it is needed!
-rm -rf /var/lib/apt/lists/*
-EOF
+  python${PYVER} python${PYVER}-dev python${PYVER}-venv && \
+  rm -rf /var/lib/apt/lists/*
 
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
