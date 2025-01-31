@@ -1,10 +1,10 @@
 # Dockerfiles and image publish workflows
 
-Under the [epic](https://github.com/edx/public-dockerfiles/issues/12) to remove dockerfiles and workflow setup for devstack, dockerfiles were moved to this repository. 
+Under the [epic](https://github.com/edx/public-dockerfiles/issues/12) to remove dockerfiles and workflow setup for devstack, dockerfiles were moved to this repository.
 
 ## Overview
 
-This respoitory aims to streamline all the dockerfiles and docker images publishing from a single source. Images for the following services are included in this repo. 
+This repository aims to streamline all the dockerfiles and docker images publishing from a single source. Images for the following services are included in this repo.
 
 - commerce-coordinator
 - code-jail
@@ -32,10 +32,10 @@ This respoitory aims to streamline all the dockerfiles and docker images publish
 We can locally build and test the images. Following steps are to be taken to test the images.
 
 1. Clone the repository
-2. Build the image using following command <br/> ``docker build -t <image-name>:<tag> --target <target> -f <path-to-your-dockerfile> . --progress=plain`` <br/> you can go with your custom tag for testing. 
+2. Build the image using following command <br/> ``docker build -t <image-name>:<tag> --target <target> -f <path-to-your-dockerfile> . --progress=plain`` <br/> you can go with your custom tag for testing.
 3. Once the image is built, you can run the container for that image using the following command <br/> ``docker container run --name <name-for-container> <name-of-image-built>``
 4. Once the container runs, you can enter the shell using command <br/> ``docker exec -it <container-name> <shell-executable>``
-5. You can run commands in shell and test if the image is is built correctly and container is running smoothly. 
+5. You can run commands in shell and test if the image is is built correctly and container is running smoothly.
 
 ---
 

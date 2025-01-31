@@ -26,16 +26,13 @@ ARG PYVER=3.12
 # - python*: A specific version of Python
 # - python*-dev: Header files for python extensions, required by many source wheels
 # - python*-venv: Allow creation of virtualenvs
-RUN <<EOF
-set -eu
-apt-get update
-DEBIAN_FRONTEND=noninteractive apt-get install \
-  --quiet --yes --no-install-recommends \
-  language-pack-en locales \
-  python${PYVER} python${PYVER}-dev python${PYVER}-venv
-# If you add a package, please add a comment above explaining why it is needed!
-rm -rf /var/lib/apt/lists/*
-EOF
+RUN apt-get update && \
+  DEBIAN_FRONTEND=noninteractive apt-get install \
+    --quiet --yes --no-install-recommends \
+    language-pack-en locales \
+    python${PYVER} python${PYVER}-dev python${PYVER}-venv && \
+    # If you add a package, please add a comment above explaining why it is needed!
+  rm -rf /var/lib/apt/lists/*
 
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
@@ -55,11 +52,9 @@ RUN useradd -m --shell /bin/false app
 # do not bust the image cache and require rebuilding the virtualenv.
 ADD https://github.com/${GITHUB_REPO}.git#${VERSION}:requirements requirements
 
-RUN <<EOF
-python${PYVER} -m venv /venv
-/venv/bin/pip install -r /app/requirements/pip.txt
-/venv/bin/pip install -r /app/requirements/pip-tools.txt
-EOF
+RUN python${PYVER} -m venv /venv && \
+  /venv/bin/pip install -r /app/requirements/pip.txt && \
+  /venv/bin/pip install -r /app/requirements/pip-tools.txt
 
 EXPOSE 8080
 CMD /venv/bin/gunicorn -c /app/codejail_service/docker_gunicorn_configuration.py \
