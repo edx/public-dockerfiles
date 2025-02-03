@@ -52,6 +52,7 @@ RUN useradd -m --shell /bin/false app
 # do not bust the image cache and require rebuilding the virtualenv.
 ADD https://github.com/${GITHUB_REPO}.git#${VERSION}:requirements requirements
 
+RUN ls -la /app/
 RUN python${PYVER} -m venv /venv && \
   /venv/bin/pip install -r /app/requirements/pip.txt && \
   /venv/bin/pip install -r /app/requirements/pip-tools.txt
