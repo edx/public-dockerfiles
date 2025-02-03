@@ -7,25 +7,25 @@ on:
         description: "Select an image that you want to build and push"
         type: choice
         options:
-          - commerce coordinator
-          - course discovery
+          - commerce-coordinator
+          - course-discovery
           - credentials
           - ecommerce
-          - edx analytics data api
-          - edx exams
+          - edx-analytics-data-api
+          - edx-exams
           - cms
           - cms-production
           - lms
           - lms-production
-          - edx notes api
-          - enterprise access
-          - enterprise catalog
-          - enterprise subsidy
-          - program intent engagement
+          - edx-notes-api
+          - enterprise-access
+          - enterprise-catalog
+          - enterprise-subsidy
+          - program-intent-engagement
           - registrar
           - xqueue
-          - portal designer
-          - license manager
+          - portal-designer
+          - license-manager
           - codejail
       branch:
         description: "Target branch from which the source dockerfile from image will be sourced"
