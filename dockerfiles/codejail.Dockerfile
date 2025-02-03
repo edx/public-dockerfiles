@@ -30,7 +30,7 @@ ARG PYVER=3.12
 RUN apt-get update && \
   DEBIAN_FRONTEND=noninteractive apt-get install \
     --quiet --yes --no-install-recommends \
-    language-pack-en locales \
+    curl language-pack-en locales \
     python${PYVER} python${PYVER}-dev python${PYVER}-venv && \
     # If you add a package, please add a comment above explaining why it is needed!
   rm -rf /var/lib/apt/lists/*
