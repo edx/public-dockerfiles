@@ -21,6 +21,7 @@ ARG PYVER=3.12
 
 # Packages installed:
 #
+# - curl: To fetch the repository as a tarball
 # - language-pack-en, locales: Ubuntu locale support so that system utilities
 #   have a consistent language and time zone.
 # - python*: A specific version of Python
@@ -45,14 +46,9 @@ WORKDIR /app
 # `app` for actually running the application.
 RUN useradd -m --shell /bin/false app
 
-# Unpack the repo directly from GitHub, since this image is not built
-# from inside the application repo.
-#
-# Start with getting just the requirements files so that code changes
-# do not bust the image cache and require rebuilding the virtualenv.
-ADD https://github.com/${GITHUB_REPO}.git#${VERSION}:requirements requirements
+# Cloning git repo
+RUN curl -L https://github.com/${GITHUB_REPO}/archive/refs/heads/${VERSION}.tar.gz | tar -xz --strip-components=1
 
-RUN ls -la /app/
 RUN python${PYVER} -m venv /venv && \
   /venv/bin/pip install -r /app/requirements/pip.txt && \
   /venv/bin/pip install -r /app/requirements/pip-tools.txt
@@ -75,8 +71,6 @@ RUN apt-get update && \
 RUN /venv/bin/pip-sync requirements/dev.txt
 RUN python${PYVER} -m compileall /venv
 
-# Add code changes after deps installation so it won't bust the image cache
-ADD https://github.com/${GITHUB_REPO}.git#${VERSION} .
 RUN python${PYVER} -m compileall /app
 
 # Set up virtualenv for developer
@@ -88,8 +82,6 @@ FROM app AS prod
 RUN /venv/bin/pip-sync requirements/base.txt
 RUN python${PYVER} -m compileall /venv
 
-# Add code changes after deps installation so it won't bust the image cache
-ADD https://github.com/${GITHUB_REPO}.git#${VERSION} .
 RUN python${PYVER} -m compileall /app
 
 # Drop to unprivileged user for running service
