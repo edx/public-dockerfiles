@@ -3,39 +3,80 @@
 # - Listens on port 8080 internally
 # - Set environment variable `DJANGO_SETTINGS_MODULE`, e.g. to
 #   `codejail_service.settings.production` or `codejail_service.settings.devstack`
+#
+# In the nomenclature of codejail's confinement documentation:
+#
+# - SANDENV is at `/sandbox/venv`
+# - Sandbox user is `sandbox`
+# - SANDBOX_CALLER is `app`
 
 FROM ubuntu:noble AS app
 
 
 ##### Defaults and config #####
 
-ARG GITHUB_REPO=openedx/codejail-service
+# GitHub org/repo containing the webapp
+ARG APP_REPO=openedx/codejail-service
 
 # This must be a branch or other ref.
-ARG VERSION=main
+ARG APP_VERSION=main
 
-# Python version
-ARG PYVER=3.12
+# Python version for webapp
+ARG APP_PY_VER=3.12
+
+# Where to get the Python dependencies lockfile for installing
+# packages into the sandbox environment. Defaults to the codejail
+# dependencies in edx-platform.
+ARG SANDBOX_DEPS_REPO=openedx/edx-platform
+ARG SANDBOX_DEPS_VERSION=master
+# Path to the lockfile in the deps repo.
+#
+# The path base.txt will get the latest dependencies, but this needs
+# to be coordinated with SANDBOX_PY_VER as each release has a
+# different Python support window. We'll continue to use the quince
+# release until we can move beyond Python 3.8.
+ARG SANDBOX_DEPS_PATH=requirements/edx-sandbox/releases/quince.txt
+
+# Python version for sandboxed executions
+ARG SANDBOX_PY_VER=3.8
 
 
 ##### Base app installation #####
 
-# So that we don't have to repeat this for each apt install
+# Internal variables
+
 ENV DEBIAN_FRONTEND=noninteractive
 ARG APT_INSTALL="apt-get install --quiet --yes --no-install-recommends"
+
+# Note: These need to be coordinated with the apparmor profile
+ARG SAND_DEPS=/sandbox/requirements.txt
+ARG SAND_VENV=/sandbox/venv
+# Sandbox user account
+ARG SAND_USER=sandbox
 
 # Packages installed:
 #
 # - curl: To fetch the repository as a tarball
 # - language-pack-en, locales: Ubuntu locale support so that system utilities
 #   have a consistent language and time zone.
-# - python*: A specific version of Python
+# - sudo: Web user (`app`) needs to be able to sudo as `SAND_USER`
+# - python*: Specific versions of Python -- the service runs with a recent version, but
+#   the sandboxed code will usually need a different (older) version. This is also why
+#   we need to pull in the deadsnakes PPA.
 # - python*-dev: Header files for python extensions, required by many source wheels
 # - python*-venv: Allow creation of virtualenvs
+#
+# We also have to do a bit of bootstrapping here installing the
+# `software-properties-common` package gives us `add-apt-repository`, which
+# allows us to add the deadsnakes PPA more easily (that is, without messing
+# about with repository keys).
 RUN apt-get update && \
+  ${APT_INSTALL} software-properties-common && \
+  add-apt-repository ppa:deadsnakes/ppa && \
   ${APT_INSTALL} \
-    curl language-pack-en locales \
-    python${PYVER} python${PYVER}-dev python${PYVER}-venv \
+    curl language-pack-en locales sudo \
+    python${APP_PY_VER} python${APP_PY_VER}-dev python${APP_PY_VER}-venv \
+    python${SANDBOX_PY_VER} python${SANDBOX_PY_VER}-venv \
     # If you add a package, please add a comment above explaining why it is needed!
   && \
   rm -rf /var/lib/apt/lists/*
@@ -52,11 +93,34 @@ WORKDIR /app
 RUN useradd --create-home --shell /bin/false app
 
 # Cloning git repo
-RUN curl -L https://github.com/${GITHUB_REPO}/archive/refs/heads/${VERSION}.tar.gz | tar -xz --strip-components=1
+RUN curl -L https://github.com/${APP_REPO}/archive/refs/heads/${APP_VERSION}.tar.gz | tar -xz --strip-components=1
 
-RUN python${PYVER} -m venv /venv && \
+RUN python${APP_PY_VER} -m venv /venv && \
   /venv/bin/pip install -r /app/requirements/pip.txt && \
   /venv/bin/pip install -r /app/requirements/pip-tools.txt
+
+
+##### Sandbox environment #####
+
+# Codejail executions will be run under this user's account.
+RUN useradd --no-create-home --shell /bin/false --user-group ${SAND_USER}
+
+# We need to use --copies so that there is a distinct Python
+# executable to confine.
+RUN mkdir -p ${SAND_VENV}
+RUN python${SANDBOX_PY_VER} -m venv --clear --copies ${SAND_VENV}
+
+RUN curl -L "https://github.com/${SANDBOX_DEPS_REPO}/raw/refs/heads/${SANDBOX_DEPS_VERSION}/${SANDBOX_DEPS_PATH}" > ${SAND_DEPS}
+RUN ${SAND_VENV}/bin/pip install -r ${SAND_DEPS}
+
+# Sudoers config as specified by codejail's docs.
+# - `find` is used in sandbox cleanup
+# - `pkill` is used to terminate overlong execution
+RUN { \
+  echo "app ALL=(${SAND_USER}) SETENV:NOPASSWD:${SAND_VENV}/bin/python"; \
+  echo "app ALL=(${SAND_USER}) SETENV:NOPASSWD:/usr/bin/find"; \
+  echo "app ALL=(ALL) NOPASSWD:/usr/bin/pkill"; \
+} > /etc/sudoers.d/01-sandbox
 
 
 ##### Default run config #####
@@ -77,7 +141,7 @@ RUN apt-get update && \
   rm -rf /var/lib/apt/lists/*
 
 RUN /venv/bin/pip-sync requirements/dev.txt
-RUN python${PYVER} -m compileall /venv /app
+RUN python${APP_PY_VER} -m compileall /venv /app
 
 # Set up virtualenv for developer
 ENV PATH="/venv/bin:$PATH"
@@ -88,7 +152,7 @@ ENV PATH="/venv/bin:$PATH"
 FROM app AS prod
 
 RUN /venv/bin/pip-sync requirements/base.txt
-RUN python${PYVER} -m compileall /venv /app
+RUN python${APP_PY_VER} -m compileall /venv /app
 
 # Drop to unprivileged user for running service
 USER app
