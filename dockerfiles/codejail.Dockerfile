@@ -3,7 +3,7 @@
 # - Listens on port 8080 internally
 # - Set environment variable `DJANGO_SETTINGS_MODULE`, e.g. to
 #   `codejail_service.settings.production` or `codejail_service.settings.devstack`
-# - Override arg `VERSION` to a commit hash or a branch
+# - Override arg `APP_REVISION` to a commit hash or a branch
 #
 # In the nomenclature of codejail's confinement documentation:
 #
@@ -16,20 +16,39 @@ FROM ubuntu:noble AS app
 
 ##### Base app installation #####
 
-ARG GITHUB_REPO=openedx/codejail-service
+# Source repo for codejail-service -- any git repo URL.
+ARG APP_REPO=https://github.com/openedx/codejail-service.git
 
 # This should be overridden with a commit hash to ensure we always get
 # a coherent result, even if things are changing on a branch as the
 # image is being built.
 #
 # Must use the full 40-character hash when specifying a commit hash.
-ARG VERSION=main
+ARG APP_REVISION=main
 
 # Python version
 ARG PY_VER_APP=3.12
+
+# Where to get the Python dependencies lockfile for installing
+# packages into the sandbox environment. Defaults to the codejail
+# dependencies in edx-platform.
+ARG SANDBOX_DEPS_REPO=https://github.com/openedx/edx-platform.git
+ARG SANDBOX_DEPS_REVISION=master
+# These together form a path to a file in the deps repo. The
+# separation is necessary because ADD can only check out a directory
+# when pulling from a git repo.
+#
+# The path base.txt will get the latest dependencies, but this needs
+# to be coordinated with PY_VER_SANDBOX as each release has a
+# different Python support window. We'll continue to use the quince
+# release until we can move beyond Python 3.8.
+ARG SANDBOX_DEPS_DIR=/requirements/edx-sandbox
+ARG SANDBOX_DEPS_PATH=releases/quince.txt
+
 ARG PY_VER_SANDBOX=3.8
 
 ARG SANDENV=/sandbox/venv
+
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG APT_INSTALL="apt-get install --quiet --yes --no-install-recommends"
@@ -76,7 +95,7 @@ RUN useradd --create-home --shell /bin/false app
 #
 # Start with getting just the requirements files so that code changes
 # do not bust the image cache and require rebuilding the virtualenv.
-ADD https://github.com/${GITHUB_REPO}.git#${VERSION}:requirements requirements
+ADD ${APP_REPO}#${APP_REVISION}:requirements requirements
 
 RUN python${PY_VER_APP} -m venv /venv && \
   /venv/bin/pip install -r /app/requirements/pip.txt && \
@@ -91,6 +110,9 @@ RUN useradd --no-create-home --shell /bin/false --user-group sandbox
 # executable to confine.
 RUN mkdir -p ${SANDENV}
 RUN python${PY_VER_SANDBOX} -m venv --clear --copies ${SANDENV}
+
+ADD ${SANDBOX_DEPS_REPO}#${SANDBOX_DEPS_REVISION}:${SANDBOX_DEPS_DIR} /tmp/sandbox-deps-dir/
+RUN ${SANDENV}/bin/pip install -r /tmp/sandbox-deps-dir/${SANDBOX_DEPS_PATH}
 
 RUN { \
   echo "app ALL=(sandbox) SETENV:NOPASSWD:${SANDENV}/bin/python"; \
@@ -120,7 +142,7 @@ RUN /venv/bin/pip-sync requirements/dev.txt
 RUN python${PY_VER_APP} -m compileall /venv
 
 # Add code changes after deps installation so it won't bust the image cache
-ADD https://github.com/${GITHUB_REPO}.git#${VERSION} .
+ADD ${APP_REPO}#${APP_REVISION} .
 RUN python${PY_VER_APP} -m compileall /app
 
 # Set up virtualenv for developer
@@ -135,7 +157,7 @@ RUN /venv/bin/pip-sync requirements/base.txt
 RUN python${PY_VER_APP} -m compileall /venv
 
 # Add code changes after deps installation so it won't bust the image cache
-ADD https://github.com/${GITHUB_REPO}.git#${VERSION} .
+ADD ${APP_REPO}#${APP_REVISION} .
 RUN python${PY_VER_APP} -m compileall /app
 
 # Drop to unprivileged user for running service
