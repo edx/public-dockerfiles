@@ -129,8 +129,8 @@
     "owning_team_email": "enterprise_alerts@2u-internal.opsgenie.net"
   },
   {
-    "image_name": "codejail",
-    "name": "codejail",
+    "image_name": "codejail-service",
+    "name": "codejail-service",
     "os_platform": "linux/amd64,linux/arm64",
     "target": "dev"
   }
