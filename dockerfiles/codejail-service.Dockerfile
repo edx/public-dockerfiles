@@ -3,17 +3,12 @@
 # - Listens on port 8080 internally
 # - Set environment variable `DJANGO_SETTINGS_MODULE`, e.g. to
 #   `codejail_service.settings.production` or `codejail_service.settings.devstack`
-# - Override arg `VERSION` to a commit hash or a branch
 
 FROM ubuntu:noble AS app
 
 ARG GITHUB_REPO=openedx/codejail-service
 
-# This should be overridden with a commit hash to ensure we always get
-# a coherent result, even if things are changing on a branch as the
-# image is being built.
-#
-# Must use the full 40-character hash when specifying a commit hash.
+# This must be a branch or other ref.
 ARG VERSION=main
 
 # Python version
@@ -69,9 +64,7 @@ RUN apt-get update && \
   rm -rf /var/lib/apt/lists/*
 
 RUN /venv/bin/pip-sync requirements/dev.txt
-RUN python${PYVER} -m compileall /venv
-
-RUN python${PYVER} -m compileall /app
+RUN python${PYVER} -m compileall /venv /app
 
 # Set up virtualenv for developer
 ENV PATH="/venv/bin:$PATH"
@@ -80,9 +73,7 @@ ENV PATH="/venv/bin:$PATH"
 FROM app AS prod
 
 RUN /venv/bin/pip-sync requirements/base.txt
-RUN python${PYVER} -m compileall /venv
-
-RUN python${PYVER} -m compileall /app
+RUN python${PYVER} -m compileall /venv /app
 
 # Drop to unprivileged user for running service
 USER app
