@@ -4,11 +4,13 @@
 # - Set environment variable `DJANGO_SETTINGS_MODULE`, e.g. to
 #   `codejail_service.settings.production` or `codejail_service.settings.devstack`
 #
-# In the nomenclature of codejail's confinement documentation:
+# Terminology notes:
 #
-# - SANDENV is at `/sandbox/venv`
-# - Sandbox user is `sandbox`
-# - SANDBOX_CALLER is `app`
+# - This Dockerfile is for the codejail-service, a wrapper around the codejail
+#   *library*. When used in isolation, "codejail" usually refers to the library.
+# - "Sandbox" refers to the secured execution environment for user-submitted
+#   code,  not to the sandbox deployment environments used for debugging. This
+#   matches the codejail library's own terminology.
 
 FROM ubuntu:noble AS app
 
@@ -18,7 +20,7 @@ FROM ubuntu:noble AS app
 # GitHub org/repo containing the webapp
 ARG APP_REPO=openedx/codejail-service
 
-# This must be a branch or other ref.
+# This must be a branch or other ref in APP_REPO
 ARG APP_VERSION=main
 
 # Python version for webapp
@@ -48,18 +50,38 @@ ARG SANDBOX_PY_VER=3.8
 ENV DEBIAN_FRONTEND=noninteractive
 ARG APT_INSTALL="apt-get install --quiet --yes --no-install-recommends"
 
-# Note: These need to be coordinated with the apparmor profile
-ARG SAND_DEPS=/sandbox/requirements.txt
+# The codejail library specifies a certain structure to how the sandboxing is
+# performed. (See the documentation in the codejail library README:
+# https://github.com/openedx/codejail).
+#
+# Some of this structure can be changed, and some cannot. Any changes that are
+# possible will also need to be coordinated with changes to the apparmor profile
+# as well as to the `CODE_JAIL` Django settings. Accordingly, it's best to just
+# *avoid* making making changes to this part.
+
+# The location of the virtualenv that code executions in the sandbox will use.
+# This is a critical path, as SAND_VENV/bin/python is what is targeted by the
+# AppArmor confinement. It must also match the Django setting
+# `CODE_JAIL.python_bin`. The codejail docs refer to this as `<SANDENV>`.
 ARG SAND_VENV=/sandbox/venv
-# Sandbox user account
+# The OS account that will run code executions, described just as "the sandbox
+# user" in codejail docs. This needs to match the Django setting
+# `CODE_JAIL.user` and the sudoers file.
 ARG SAND_USER=sandbox
+# The OS account that runs the regular web app, described in codejail docs as
+# `<SANDBOX_CALLER>`. Needs to match the sudoers file.
+ARG APP_USER=app
+
+# Temporary location where we save the lockfile for Python dependencies before
+# installing them in the sandbox virtualenv.
+ARG SAND_DEPS=/sandbox/requirements.txt
 
 # Packages installed:
 #
 # - curl: To fetch the repository as a tarball
 # - language-pack-en, locales: Ubuntu locale support so that system utilities
 #   have a consistent language and time zone.
-# - sudo: Web user (`app`) needs to be able to sudo as `SAND_USER`
+# - sudo: Web user (`APP_USER`) needs to be able to sudo as `SAND_USER`
 # - python*: Specific versions of Python -- the service runs with a recent version, but
 #   the sandboxed code will usually need a different (older) version. This is also why
 #   we need to pull in the deadsnakes PPA.
@@ -88,9 +110,9 @@ ENV LC_ALL=en_US.UTF-8
 
 WORKDIR /app
 
-# We'll build the virtualenv and pre-compile Python as root, but switch to user
-# `app` for actually running the application.
-RUN useradd --create-home --shell /bin/false app
+# We'll build the virtualenv and pre-compile Python as root, but switch to app user
+# for actually running the application.
+RUN useradd --create-home --shell /bin/false ${APP_USER}
 
 # Cloning git repo
 RUN curl -L https://github.com/${APP_REPO}/archive/refs/heads/${APP_VERSION}.tar.gz | tar -xz --strip-components=1
@@ -110,6 +132,7 @@ RUN useradd --no-create-home --shell /bin/false --user-group ${SAND_USER}
 RUN mkdir -p ${SAND_VENV}
 RUN python${SANDBOX_PY_VER} -m venv --clear --copies ${SAND_VENV}
 
+# Fetch and install the Python libraries used by the sandbox.
 RUN curl -L "https://github.com/${SANDBOX_DEPS_REPO}/raw/refs/heads/${SANDBOX_DEPS_VERSION}/${SANDBOX_DEPS_PATH}" > ${SAND_DEPS}
 RUN ${SAND_VENV}/bin/pip install -r ${SAND_DEPS}
 
@@ -117,9 +140,9 @@ RUN ${SAND_VENV}/bin/pip install -r ${SAND_DEPS}
 # - `find` is used in sandbox cleanup
 # - `pkill` is used to terminate overlong execution
 RUN { \
-  echo "app ALL=(${SAND_USER}) SETENV:NOPASSWD:${SAND_VENV}/bin/python"; \
-  echo "app ALL=(${SAND_USER}) SETENV:NOPASSWD:/usr/bin/find"; \
-  echo "app ALL=(ALL) NOPASSWD:/usr/bin/pkill"; \
+  echo "${APP_USER} ALL=(${SAND_USER}) SETENV:NOPASSWD:${SAND_VENV}/bin/python"; \
+  echo "${APP_USER} ALL=(${SAND_USER}) SETENV:NOPASSWD:/usr/bin/find"; \
+  echo "${APP_USER} ALL=(ALL) NOPASSWD:/usr/bin/pkill"; \
 } > /etc/sudoers.d/01-sandbox
 
 
@@ -155,4 +178,4 @@ RUN /venv/bin/pip-sync requirements/base.txt
 RUN python${APP_PY_VER} -m compileall /venv /app
 
 # Drop to unprivileged user for running service
-USER app
+USER ${APP_USER}
