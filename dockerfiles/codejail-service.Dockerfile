@@ -9,7 +9,7 @@
 # - This Dockerfile is for the codejail-service, a wrapper around the codejail
 #   *library*. When used in isolation, "codejail" usually refers to the library.
 # - "Sandbox" refers to the secured execution environment for user-submitted
-#   code,  not to the sandbox deployment environments used for debugging. This
+#   code, not to the sandbox deployment environments used for debugging. This
 #   matches the codejail library's own terminology.
 
 FROM ubuntu:noble AS app
@@ -57,18 +57,18 @@ ARG APT_INSTALL="apt-get install --quiet --yes --no-install-recommends"
 # Some of this structure can be changed, and some cannot. Any changes that are
 # possible will also need to be coordinated with changes to the apparmor profile
 # as well as to the `CODE_JAIL` Django settings. Accordingly, it's best to just
-# *avoid* making making changes to this part.
+# *avoid* making changes to this part.
 
 # The location of the virtualenv that code executions in the sandbox will use.
 # This is a critical path, as SAND_VENV/bin/python is what is targeted by the
 # AppArmor confinement. It must also match the Django setting
 # `CODE_JAIL.python_bin`. The codejail docs refer to this as `<SANDENV>`.
 ARG SAND_VENV=/sandbox/venv
-# The OS account that will run code executions, described just as "the sandbox
+# The user account that will run code executions, described just as "the sandbox
 # user" in codejail docs. This needs to match the Django setting
 # `CODE_JAIL.user` and the sudoers file.
 ARG SAND_USER=sandbox
-# The OS account that runs the regular web app, described in codejail docs as
+# The user account that runs the regular web app, described in codejail docs as
 # `<SANDBOX_CALLER>`. Needs to match the sudoers file.
 ARG APP_USER=app
 
