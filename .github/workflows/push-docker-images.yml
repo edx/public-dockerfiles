@@ -14,9 +14,7 @@ on:
           - edx-analytics-data-api
           - edx-exams
           - cms
-          - cms-production
           - lms
-          - lms-production
           - edx-notes-api
           - enterprise-access
           - enterprise-catalog
