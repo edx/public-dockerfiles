@@ -1,0 +1,76 @@
+# Require that images-data.json and the list of images in
+# push-docker-images.yaml are kept in sync.
+
+name: Check that image lists are in sync
+on:
+  # To make this a required check, has to run even if no relevant
+  # config changes. So can't filter on paths here.
+  pull_request:
+defaults:
+  run:
+    shell: bash # making this explicit opts into -e -o pipefail
+jobs:
+  check-image-list-sync:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.12'
+
+    - name: Detect and report
+      run: |
+        python3.12 -m venv --upgrade-deps ./deps-venv
+        source ./deps-venv/bin/activate
+        pip install --quiet jq yq
+
+        json_src=images-data.json
+        workflow_src=.github/workflows/push-docker-images.yml
+
+        cat "$json_src" \
+          | jq '.[].name' -r \
+          | sort \
+          > names-in-json.lst
+
+        cat "$workflow_src" \
+          | yq '.on.workflow_dispatch.inputs.image_to_build.options[]' -r \
+          | sort \
+          > options-in-workflow.lst
+
+        set +e
+        diff_out=$(diff -u0 names-in-json.lst options-in-workflow.lst)
+        diff_exit=$?
+        set -e
+
+        function step_log {
+            echo "$1" | tee -a "$GITHUB_STEP_SUMMARY"
+        }
+
+        echo
+        echo
+        case $diff_exit in
+            0)
+                step_log "Image lists match!"
+                exit 0
+                ;;
+            1)
+                step_log "Mismatch in image name lists between \`$json_src\` and \`$workflow_src\`:"
+                step_log '```'
+                step_log "$diff_out"
+                step_log '```'
+                exit 1
+                ;;
+            *)
+                step_log "Error computing diff:"
+                step_log '```'
+                step_log "$diff_out"
+                step_log '```'
+                step_log "Exit code: $diff_exit"
+                exit 1
+                ;;
+        esac
