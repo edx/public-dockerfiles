@@ -1,21 +1,15 @@
-# AppArmor profile for running codejail-service in devstack.
+# AppArmor profile for running codejail-service.
+#
+# Changes to this profile must be coordinated carefully with changes to the
+# Dockerfile. See README for additional cautions.
 #
 #                         #=========#
 #                         # WARNING #
 #                         #=========#
 #
-# This is not a complete and secure apparmor profile! Do not use this
-# in any deployed environment (even a staging environment) without
-# careful inspection and modification to fit your needs.
-#
-# See https://manpages.ubuntu.com/manpages/noble/man5/apparmor.d.5.html
-# or `man apparmor.d` for documentation of syntax and options.
-#
 # Failure to apply a secure apparmor profile *will* likely result in a
-# compromise of your environment by an attacker.
-#
-# We may at some point make this file good enough for confinement in
-# production, but for now it is only intended to be used in devstack.
+# full compromise of the host by an attacker. AppArmor is *mandatory*
+# for using codejail -- this is not just for hardening.
 
 
 
@@ -102,9 +96,6 @@ profile openedx_codejail_service flags=(mediate_deleted) {
         # https://github.com/openedx/codejail/blob/0165d9ca351/codejail/util.py#L15
         /tmp/codejail-*/ r,
         /tmp/codejail-*/** rw,
-
-        # Allow interactive terminal in devstack.
-        /dev/pts/* rw,
 
         # Allow receiving a kill signal from the webapp when the execution
         # runs beyond time limits.
