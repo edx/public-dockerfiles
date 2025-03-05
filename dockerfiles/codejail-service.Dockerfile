@@ -77,7 +77,7 @@ ARG APP_USER=app
 ARG SAND_DEPS=/sandbox/requirements.txt
 
 # The codejail-service API tests check for the visibility of this environment
-# variable from the sandbox. (It should not be visibile.) This helps test for
+# variable from the sandbox. (It should not be visible.) This helps test for
 # environment leakage into the sandbox.
 ENV CJS_TEST_ENV_LEAKAGE=yes
 
