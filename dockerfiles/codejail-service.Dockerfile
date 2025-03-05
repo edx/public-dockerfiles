@@ -76,6 +76,11 @@ ARG APP_USER=app
 # installing them in the sandbox virtualenv.
 ARG SAND_DEPS=/sandbox/requirements.txt
 
+# The codejail-service API tests check for the visibility of this environment
+# variable from the sandbox. (It should not be visible.) This helps test for
+# environment leakage into the sandbox.
+ENV CJS_TEST_ENV_LEAKAGE=yes
+
 # Packages installed:
 #
 # - curl: To fetch the repository as a tarball
