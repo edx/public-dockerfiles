@@ -108,5 +108,4 @@ CMD gunicorn --workers=2 --name enterprise-subsidy -c /edx/app/enterprise-subsid
 FROM app AS devstack
 USER root
 RUN pip install -r requirements/dev.txt
-USER app
 CMD gunicorn --workers=2 --name enterprise-subsidy -c /edx/app/enterprise-subsidy/enterprise_subsidy/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_subsidy.wsgi:application
