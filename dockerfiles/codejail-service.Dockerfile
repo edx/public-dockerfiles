@@ -115,6 +115,12 @@ ENV LC_ALL=en_US.UTF-8
 
 WORKDIR /app
 
+# Remove the `ubuntu` user so that UID 1000 is freed up for creating an app
+# user. This is specific to 2U's kubernetes infrastructure, which assumes that
+# UID 1000 is the one that will be used to run the service. This command also
+# removes the user's group as well. Note that Ubuntu images before noble (24.04)
+# didn't include this user.
+RUN userdel --remove ubuntu
 # We'll build the virtualenv and pre-compile Python as root, but switch to app user
 # for actually running the application.
 RUN useradd --create-home --shell /bin/false ${APP_USER}
