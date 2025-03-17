@@ -38,6 +38,11 @@ We can locally build and test the images. Following steps are to be taken to tes
 4. Once the container runs, you can enter the shell using this command: ``docker exec -it <container-name> <shell-executable>``
 5. You can run commands in shell and test if the image is is built correctly and container is running smoothly.
 
+Authoring
+*********
+
+See ``docs/dockerfile-tips.rst`` for additional information on writing Dockerfiles for 2U's infrastructure, environment, and standards.
+
 Repository Structure
 ********************
 
