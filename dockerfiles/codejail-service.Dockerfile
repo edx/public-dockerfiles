@@ -159,6 +159,11 @@ RUN { \
 
 ##### Default run config #####
 
+# Set up virtualenv for any additional commands. This isn't just for developers
+# -- it allows an entry command into the Dockerfile to be run without the caller
+# knowing where the virtualenv is located.
+ENV PATH="/venv/bin:$PATH"
+
 EXPOSE 8080
 CMD /venv/bin/gunicorn -c /app/codejail_service/docker_gunicorn_configuration.py \
     --bind '0.0.0.0:8080' --workers=10 --max-requests=1000 \
@@ -176,9 +181,6 @@ RUN apt-get update && \
 
 RUN /venv/bin/pip-sync requirements/dev.txt
 RUN python${APP_PY_VER} -m compileall /venv /app
-
-# Set up virtualenv for developer
-ENV PATH="/venv/bin:$PATH"
 
 
 ##### Production target #####
