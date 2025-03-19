@@ -3,6 +3,8 @@
 # - Listens on port 8080 internally
 # - Set environment variable `DJANGO_SETTINGS_MODULE`, e.g. to
 #   `codejail_service.settings.production` or `codejail_service.settings.devstack`
+# - Must be run with UID and GID $APP_UID_GID, if setting this explicitly in the
+#   container execution.
 #
 # Terminology notes:
 #
@@ -25,6 +27,15 @@ ARG APP_VERSION=main
 
 # Python version for webapp
 ARG APP_PY_VER=3.12
+
+# See codejail-service deployment and configuration docs for why we need to select
+# a UID/GID that is unlikely to collide with anything on the host. (Short answer:
+# RLIMIT_NPROC UID-global usage pool, and Docker not isolating UIDs.)
+#
+# Selected via: python3 -c 'import random; print(random.randrange(3000, 2 ** 31))'
+ARG APP_UID=206593644
+# Use the same group ID as the user ID for convenience.
+ARG APP_GID=$APP_UID
 
 # Where to get the Python dependencies lockfile for installing
 # packages into the sandbox environment. Defaults to the codejail
@@ -68,6 +79,9 @@ ARG SAND_VENV=/sandbox/venv
 # user" in codejail docs. This needs to match the Django setting
 # `CODE_JAIL.user` and the sudoers file.
 ARG SAND_USER=sandbox
+# Same situation as for APP_UID
+ARG SAND_UID=349590265
+ARG SAND_GID=$SAND_UID
 # The user account that runs the regular web app, described in codejail docs as
 # `<SANDBOX_CALLER>`. Needs to match the sudoers file.
 ARG APP_USER=app
@@ -115,15 +129,10 @@ ENV LC_ALL=en_US.UTF-8
 
 WORKDIR /app
 
-# Remove the `ubuntu` user so that UID 1000 is freed up for creating an app
-# user. This is specific to 2U's kubernetes infrastructure, which assumes that
-# UID 1000 is the one that will be used to run the service. This command also
-# removes the user's group as well. Note that Ubuntu images before noble (24.04)
-# didn't include this user.
-RUN userdel --remove ubuntu
 # We'll build the virtualenv and pre-compile Python as root, but switch to app user
 # for actually running the application.
-RUN useradd --create-home --shell /bin/false ${APP_USER}
+RUN groupadd --gid $APP_GID $APP_USER
+RUN useradd --no-create-home --shell /bin/false --uid $APP_UID --gid $APP_GID $APP_USER
 
 # Cloning git repo
 RUN curl -L https://github.com/${APP_REPO}/archive/refs/heads/${APP_VERSION}.tar.gz | tar -xz --strip-components=1
@@ -136,7 +145,8 @@ RUN python${APP_PY_VER} -m venv /venv && \
 ##### Sandbox environment #####
 
 # Codejail executions will be run under this user's account.
-RUN useradd --no-create-home --shell /bin/false --user-group ${SAND_USER}
+RUN groupadd --gid $SAND_GID $SAND_USER
+RUN useradd --no-create-home --shell /bin/false --uid $SAND_UID --gid $SAND_GID $SAND_USER
 
 # We need to use --copies so that there is a distinct Python
 # executable to confine.
