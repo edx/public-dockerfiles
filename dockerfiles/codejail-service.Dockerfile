@@ -33,7 +33,9 @@ ARG APP_PY_VER=3.12
 # RLIMIT_NPROC UID-global usage pool, and Docker not isolating UIDs.)
 #
 # Selected via: python3 -c 'import random; print(random.randrange(3000, 2 ** 31))'
-ARG APP_UID_GID=206593644
+ARG APP_UID=206593644
+# Use the same group ID as the user ID for convenience.
+ARG APP_GID=$APP_UID
 
 # Where to get the Python dependencies lockfile for installing
 # packages into the sandbox environment. Defaults to the codejail
@@ -77,8 +79,9 @@ ARG SAND_VENV=/sandbox/venv
 # user" in codejail docs. This needs to match the Django setting
 # `CODE_JAIL.user` and the sudoers file.
 ARG SAND_USER=sandbox
-# Same situation as for APP_UID_GID
-ARG SAND_UID_GID=349590265
+# Same situation as for APP_UID
+ARG SAND_UID=349590265
+ARG SAND_GID=$SAND_UID
 # The user account that runs the regular web app, described in codejail docs as
 # `<SANDBOX_CALLER>`. Needs to match the sudoers file.
 ARG APP_USER=app
@@ -128,8 +131,8 @@ WORKDIR /app
 
 # We'll build the virtualenv and pre-compile Python as root, but switch to app user
 # for actually running the application.
-RUN groupadd --gid $APP_UID_GID $APP_USER
-RUN useradd --no-create-home --shell /bin/false --uid $APP_UID_GID --gid $APP_UID_GID $APP_USER
+RUN groupadd --gid $APP_GID $APP_USER
+RUN useradd --no-create-home --shell /bin/false --uid $APP_UID --gid $APP_GID $APP_USER
 
 # Cloning git repo
 RUN curl -L https://github.com/${APP_REPO}/archive/refs/heads/${APP_VERSION}.tar.gz | tar -xz --strip-components=1
@@ -142,8 +145,8 @@ RUN python${APP_PY_VER} -m venv /venv && \
 ##### Sandbox environment #####
 
 # Codejail executions will be run under this user's account.
-RUN groupadd --gid $SAND_UID_GID $SAND_USER
-RUN useradd --no-create-home --shell /bin/false --uid $SAND_UID_GID --gid $SAND_UID_GID $SAND_USER
+RUN groupadd --gid $SAND_GID $SAND_USER
+RUN useradd --no-create-home --shell /bin/false --uid $SAND_UID --gid $SAND_GID $SAND_USER
 
 # We need to use --copies so that there is a distinct Python
 # executable to confine.
