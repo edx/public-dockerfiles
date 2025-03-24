@@ -56,6 +56,9 @@ profile openedx_codejail_service flags=(mediate_deleted) {
     # runs beyond time limits.
     signal (send) set=(kill) peer=openedx_codejail_service//codejail_sandbox,
 
+    # Allow receiving a kill signal (and other signals) from container orchestration.
+    signal (receive),
+
     # The core of the confinement: When the sandbox Python is executed, switch to
     # the (extremely constrained) codejail_sandbox profile.
     #
