@@ -44,8 +44,8 @@ abi <abi/4.0>,
 # and hard-to-understand path aliasing for disconnected objects.  However, the
 # outer profile already broadly allows `file`, and the only path mentioned is
 # for sandbox execution, which is a transition to a *more* restrictive
-# profile. So it would probably be acceptable. This would be needed if we were
-# limited to AppArmor 3, since the path mode is introduced in 4.
+# profile. It might be acceptable, but the `.path` version (new in AppArmor 4)
+# is much safer.
 profile openedx_codejail_service flags=(mediate_deleted, attach_disconnected.path=/disconnected) {
 
     # Allow access to a variety of commonly needed, generally safe things
