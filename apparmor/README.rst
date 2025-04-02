@@ -5,7 +5,7 @@ If a service's Docker image is to be deployed with an AppArmor profile, the prof
 
 Caveats:
 
-* We don't have an automated deployment mechanism for AppArmor profiles, and in particular we don't have a way to coordinate image updates and profile updates. Use an expand/contract pattern when coordinating changes between a Dockerfile and an AppArmor profile, and double-check that changes have been applied on one side before proceeding with the other.
+* We don't have an automated deployment mechanism for AppArmor profiles, and in particular we don't have a way to coordinate image updates and profile updates. Use an expand/contract pattern when coordinating changes between a Dockerfile and an AppArmor profile, and double-check that changes have been applied on one side before proceeding with the other. (See the `codejail service wiki page <https://2u-internal.atlassian.net/wiki/spaces/ENG/pages/1723957303/Codejail+service>`__ for more on how we deploy profiles for that sevrice.)
 * The name of the profile, as defined in the text of the file, is the part that AppArmor cares about. The filename is irrelevant. We should probably keep the two in sync, though.
 
   * Bear in mind that changing a profile name is an annoying and manual process, so think carefully when picking a name. Prefixing with ``openedx_`` may help operators.
