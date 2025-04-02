@@ -1,0 +1,35 @@
+# Check that apparmor profiles do not have any warnings when parsed.
+
+name: Validate apparmor profiles
+on:
+  pull_request:
+defaults:
+  run:
+    shell: bash # making this explicit opts into -e -o pipefail
+jobs:
+  validate-profile:
+    strategy:
+      # AppArmor version must be coordinated with ABI specified in profile.
+      matrix:
+        profile:
+          - filename: openedx_codejail_service.profile
+            os: ubuntu-24.04  # apparmor 4
+    runs-on: "${{ matrix.profile.os }}"
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+
+    - name: Validate
+      env:
+        FILENAME: "${{ matrix.profile.filename }}"
+      run: |
+        # Dry-run of parsing and loading profile. Turn on almost all warnings,
+        # and convert warnings to errors. Disable debug-cache "warning", which
+        # is really just informational. (It tells us that the file is newer than
+        # the cache, which is a pretty normal situation.)
+        sudo apparmor_parser --replace --skip-kernel-load \
+          --warn=all --warn=no-debug-cache --Werror \
+          "apparmor/$FILENAME"
