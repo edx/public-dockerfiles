@@ -73,7 +73,6 @@ RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
-ENV DJANGO_SETTINGS_MODULE edx_exams.settings.production
 
 EXPOSE 18740
 RUN useradd -m --shell /bin/false app
@@ -93,6 +92,18 @@ RUN mkdir -p /edx/var/log
 # This line is after the requirements so that changes to the code will not
 # bust the image cache
 RUN curl -L https://github.com/edx/edx-exams/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+
+FROM app as devstack
+
+ENV DJANGO_SETTINGS_MODULE edx_exams.settings.devstack
+
+RUN pip install -r requirements/dev.txt
+
+CMD while true; do python ./manage.py runserver 0.0.0.0:18740; sleep 2; done
+
+FROM app as production
+
+ENV DJANGO_SETTINGS_MODULE edx_exams.settings.production
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
