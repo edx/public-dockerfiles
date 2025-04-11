@@ -16,7 +16,6 @@ ENV LANGUAGE='en_US:en'
 ENV LC_ALL='en_US.UTF-8'
 
 # Env vars: configuration
-ENV CONFIG_ROOT='/edx/etc'
 ENV LMS_CFG="$CONFIG_ROOT/lms.yml"
 ENV CMS_CFG="$CONFIG_ROOT/cms.yml"
 
@@ -26,6 +25,7 @@ ENV PATH="${VIRTUAL_ENV}/bin:${PATH}"
 ENV PATH="/edx/app/edxapp/edx-platform/node_modules/.bin:${PATH}"
 ENV PATH="/edx/app/edxapp/edx-platform/bin:${PATH}"
 ENV PATH="/edx/app/edxapp/nodeenv/bin:${PATH}"
+ENV NODE_PATH="/edx/app/edxapp/.npm/lib/modules:/usr/lib/node_modules"
 
 WORKDIR /edx/app/edxapp/edx-platform
 
