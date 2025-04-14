@@ -16,8 +16,8 @@ ENV LANGUAGE='en_US:en'
 ENV LC_ALL='en_US.UTF-8'
 
 # Env vars: configuration
-ENV LMS_CFG="$CONFIG_ROOT/lms.yml"
-ENV CMS_CFG="$CONFIG_ROOT/cms.yml"
+ENV LMS_CFG="/edx/etc/lms.yml"
+ENV CMS_CFG="/edx/etc/cms.yml"
 
 # Env vars: path
 ENV VIRTUAL_ENV="/edx/app/edxapp/venvs/edxapp"
