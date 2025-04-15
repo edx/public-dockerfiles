@@ -66,9 +66,9 @@ ENV LC_ALL=en_US.UTF-8
 # Create Node env
 RUN pip install nodeenv
 ENV NODE_ENV=/edx/app/credentials/nodeenvs/credentials
-RUN nodeenv $NODE_ENV --node=18.20.7 --prebuilt
+RUN nodeenv $NODE_ENV --node=20.19.0 --prebuilt
 ENV PATH="$NODE_ENV/bin:$PATH"
-RUN npm install -g npm@9.x.x
+RUN npm install -g npm@11.x.x
 
 ENV DJANGO_SETTINGS_MODULE=credentials.settings.production
 ENV OPENEDX_ATLAS_PULL=true
