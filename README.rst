@@ -8,6 +8,7 @@ Overview
 
 This repository aims to streamline all the dockerfiles and docker images publishing from a single source. Images for the following services are included in this repo.
 
+- order-fulfillment
 - commerce-coordinator
 - codejail-service
 - course-discovery
