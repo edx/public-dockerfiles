@@ -151,6 +151,9 @@ COPY --from=builder-production /edx/app/edxapp/edx-platform/node_modules /edx/ap
 
 RUN curl -L https://github.com/openedx/edx-platform/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
+# Pull out the vendor JS and CSS from the node modules.
+RUN npm run postinstall
+
 # Install Python requirements again in order to capture local projects
 RUN pip install -e .
 
