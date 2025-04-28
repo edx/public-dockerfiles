@@ -46,13 +46,13 @@ ARG SANDBOX_DEPS_VERSION=master
 #
 # The path base.txt will get the latest dependencies, but this needs
 # to be coordinated with SANDBOX_PY_VER as each release has a
-# different Python support window. We'll continue to use the quince
-# release until we can move beyond Python 3.8.
+# different Python support window.
 ARG SANDBOX_DEPS_SRC_DIR=requirements/edx-sandbox/releases
-ARG SANDBOX_DEPS_SRC_FILE=quince.txt
+ARG SANDBOX_DEPS_SRC_FILE=sumac.txt
 
-# Python version for sandboxed executions
-ARG SANDBOX_PY_VER=3.8
+# Python version for sandboxed executions. This must be coordinated with
+# `SANDBOX_DEPS_SRC_*` to ensure compatibility.
+ARG SANDBOX_PY_VER=3.12
 
 
 ##### Base app installation #####
