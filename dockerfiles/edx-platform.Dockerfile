@@ -1,5 +1,19 @@
 FROM ubuntu:focal AS minimal-system
 
+# Version of edx-platform repo to use.
+#
+# This should be overridden with a full commit hash in order to get repeatable,
+# consistent builds.
+#
+# A branch can be used during development, but will likely result in images
+# containing a mix of code from different versions of edx-platform due to how
+# Docker's caching mechanism works -- RUN commands are cached based on their
+# textual value. All RUN commands that refer to master or this variable will
+# need to be converted to ADD commands if you want to be able to pass a branch
+# to this arg and have it work consistently. (The main blocker is places where
+# we want to fetch a single file, because ADD can only fetch entire directories.)
+ARG EDX_PLATFORM_VERSION=master
+
 ARG DEBIAN_FRONTEND=noninteractive
 ARG SERVICE_VARIANT
 ARG SERVICE_PORT
@@ -104,9 +118,9 @@ RUN python3.11 -m venv "${VIRTUAL_ENV}"
 # Install python requirements
 # Requires copying over requirements files, but not entire repository
 RUN mkdir -p requirements/edx
-RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/pip.txt
-RUN curl -L -o requirements/edx/base.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/edx/base.txt
-RUN curl -L -o requirements/edx/assets.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/edx/assets.txt
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/requirements/pip.txt
+RUN curl -L -o requirements/edx/base.txt https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/requirements/edx/base.txt
+RUN curl -L -o requirements/edx/assets.txt https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/requirements/edx/assets.txt
 
 
 RUN pip install -r requirements/pip.txt
@@ -121,11 +135,11 @@ RUN npm install -g npm@10.5.x
 # We copy it into the image now so that it will be available when we run `npm install` in the next step.
 # The script itself will copy certain modules into some uber-legacy parts of edx-platform which still use RequireJS.
 RUN mkdir scripts
-RUN curl -L -o scripts/copy-node-modules.sh https://raw.githubusercontent.com/openedx/edx-platform/master/scripts/copy-node-modules.sh
+RUN curl -L -o scripts/copy-node-modules.sh https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/scripts/copy-node-modules.sh
 
 # Install node modules
-RUN curl -L -o package.json https://raw.githubusercontent.com/openedx/edx-platform/master/package.json
-RUN curl -L -o package-lock.json https://raw.githubusercontent.com/openedx/edx-platform/master/package-lock.json
+RUN curl -L -o package.json https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/package.json
+RUN curl -L -o package-lock.json https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/package-lock.json
 
 
 RUN chmod +x scripts/copy-node-modules.sh
@@ -135,7 +149,7 @@ RUN npm set progress=false && npm ci
 # The built artifacts from this stage are then copied to the development stage.
 FROM builder-production AS builder-development
 
-RUN curl -L -o requirements/edx/development.txt https://raw.githubusercontent.com/openedx/edx-platform/master/requirements/edx/development.txt
+RUN curl -L -o requirements/edx/development.txt https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/requirements/edx/development.txt
 
 RUN pip install -r requirements/edx/development.txt
 
@@ -148,8 +162,7 @@ COPY --from=builder-production /edx/app/edxapp/nodeenv /edx/app/edxapp/nodeenv
 COPY --from=builder-production /edx/app/edxapp/edx-platform/node_modules /edx/app/edxapp/edx-platform/node_modules
 
 # Copy over remaining parts of repository (including all code)
-
-RUN curl -L https://github.com/openedx/edx-platform/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+ADD https://github.com/openedx/edx-platform.git#${EDX_PLATFORM_VERSION} .
 
 # Pull out the vendor JS and CSS from the node modules.
 RUN npm run postinstall
