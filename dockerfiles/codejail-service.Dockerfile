@@ -20,10 +20,10 @@ FROM ubuntu:noble AS app
 ##### Defaults and config #####
 
 # GitHub org/repo containing the webapp
-ARG APP_REPO=openedx/codejail-service
+ARG CODEJAIL_SERVICE_REPO=openedx/codejail-service
 
-# This must be a branch or other ref in APP_REPO
-ARG APP_VERSION=main
+# Revision of CODEJAIL_SERVICE_REPO, ideally a commit hash
+ARG CODEJAIL_SERVICE_VERSION=main
 
 # Python version for webapp
 ARG APP_PY_VER=3.12
@@ -42,16 +42,17 @@ ARG APP_GID=$APP_UID
 # dependencies in edx-platform.
 ARG SANDBOX_DEPS_REPO=openedx/edx-platform
 ARG SANDBOX_DEPS_VERSION=master
-# Path to the lockfile in the deps repo.
+# Path to the lockfile in the deps repo, as dir + filename.
 #
 # The path base.txt will get the latest dependencies, but this needs
 # to be coordinated with SANDBOX_PY_VER as each release has a
-# different Python support window. We'll continue to use the quince
-# release until we can move beyond Python 3.8.
-ARG SANDBOX_DEPS_PATH=requirements/edx-sandbox/releases/quince.txt
+# different Python support window.
+ARG SANDBOX_DEPS_SRC_DIR=requirements/edx-sandbox/releases
+ARG SANDBOX_DEPS_SRC_FILE=teak.txt
 
-# Python version for sandboxed executions
-ARG SANDBOX_PY_VER=3.8
+# Python version for sandboxed executions. This must be coordinated with
+# `SANDBOX_DEPS_SRC_*` to ensure compatibility.
+ARG SANDBOX_PY_VER=3.12
 
 
 ##### Base app installation #####
@@ -86,10 +87,6 @@ ARG SAND_GID=$SAND_UID
 # `<SANDBOX_CALLER>`. Needs to match the sudoers file.
 ARG APP_USER=app
 
-# Temporary location where we save the lockfile for Python dependencies before
-# installing them in the sandbox virtualenv.
-ARG SAND_DEPS=/sandbox/requirements.txt
-
 # The codejail-service API tests check for the visibility of this environment
 # variable from the sandbox. (It should not be visible.) This helps test for
 # environment leakage into the sandbox.
@@ -97,7 +94,6 @@ ENV CJS_TEST_ENV_LEAKAGE=yes
 
 # Packages installed:
 #
-# - curl: To fetch the repository as a tarball
 # - language-pack-en, locales: Ubuntu locale support so that system utilities
 #   have a consistent language and time zone.
 # - sudo: Web user (`APP_USER`) needs to be able to sudo as `SAND_USER`
@@ -115,7 +111,7 @@ RUN apt-get update && \
   ${APT_INSTALL} software-properties-common && \
   add-apt-repository ppa:deadsnakes/ppa && \
   ${APT_INSTALL} \
-    curl language-pack-en locales sudo \
+    language-pack-en locales sudo \
     python${APP_PY_VER} python${APP_PY_VER}-dev python${APP_PY_VER}-venv \
     python${SANDBOX_PY_VER} python${SANDBOX_PY_VER}-venv \
     # If you add a package, please add a comment above explaining why it is needed!
@@ -127,15 +123,15 @@ ENV LANG=en_US.UTF-8
 ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
-WORKDIR /app
-
 # We'll build the virtualenv and pre-compile Python as root, but switch to app user
 # for actually running the application.
 RUN groupadd --gid $APP_GID $APP_USER
 RUN useradd --no-create-home --shell /bin/false --uid $APP_UID --gid $APP_GID $APP_USER
 
 # Cloning git repo
-RUN curl -L https://github.com/${APP_REPO}/archive/refs/heads/${APP_VERSION}.tar.gz | tar -xz --strip-components=1
+ADD https://github.com/${CODEJAIL_SERVICE_REPO}.git#${CODEJAIL_SERVICE_VERSION} /app
+
+WORKDIR /app
 
 RUN python${APP_PY_VER} -m venv /venv && \
   /venv/bin/pip install -r /app/requirements/pip.txt && \
@@ -154,8 +150,8 @@ RUN mkdir -p ${SAND_VENV}
 RUN python${SANDBOX_PY_VER} -m venv --clear --copies ${SAND_VENV}
 
 # Fetch and install the Python libraries used by the sandbox.
-RUN curl -L "https://github.com/${SANDBOX_DEPS_REPO}/raw/refs/heads/${SANDBOX_DEPS_VERSION}/${SANDBOX_DEPS_PATH}" > ${SAND_DEPS}
-RUN ${SAND_VENV}/bin/pip install -r ${SAND_DEPS}
+ADD https://github.com/${SANDBOX_DEPS_REPO}.git#${SANDBOX_DEPS_VERSION}:${SANDBOX_DEPS_SRC_DIR} /tmp/sand-deps
+RUN ${SAND_VENV}/bin/pip install -r /tmp/sand-deps/${SANDBOX_DEPS_SRC_FILE} && rm -rf /tmp/sand-deps/
 
 # Sudoers config as specified by codejail's docs.
 # - `find` is used in sandbox cleanup
