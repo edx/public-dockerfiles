@@ -1,60 +1,75 @@
-FROM ubuntu:focal as app
+FROM ubuntu:focal AS app
+MAINTAINER sre@edx.org
+
 
 # Packages installed:
 
-# language-pack-en locales; ubuntu locale support so that system utilities have a consistent
-# language and time zone.
-
+# gcc; for compiling python extensions distributed with python packages like mysql-client
+# git; for pulling requirements from GitHub.
+# language-pack-en locales; ubuntu locale support so that system utilities have a consistent language and time zone.
+# libmysqlclient-dev; to install header files needed to use native C implementation for MySQL-python for performance gains.
+# libssl-dev; # mysqlclient wont install without this.
+# pkg-config is now required for libmysqlclient-dev and its python dependencies
+# python3-dev; to install header files for python extensions; much wheel-building depends on this
+# python3-pip; install pip to install application requirements.txt files
 # python; ubuntu doesnt ship with python, so this is the python we will use to run the application
 
-# python3-pip; install pip to install application requirements.txt files
-
-# libmysqlclient-dev; to install header files needed to use native C implementation for
-# MySQL-python for performance gains.
-
-# libssl-dev; # mysqlclient wont install without this.
-
-# python3-dev; to install header files for python extensions; much wheel-building depends on this
-
-# gcc; for compiling python extensions distributed with python packages like mysql-client
+ENV TZ=UTC
+ENV TERM=xterm-256color
+ENV DEBIAN_FRONTEND=noninteractive
+ARG PYTHON_VERSION=3.12
 
 # If you add a package here please include a comment above describing what it is used for
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get -qy install --no-install-recommends \
- language-pack-en locales \
- python3.12 python3-dev python3-pip \
- # The mysqlclient Python package has install-time dependencies
- libmysqlclient-dev libssl-dev pkg-config \
- gcc
 
+RUN apt-get update && \
+  apt-get install -y software-properties-common && \
+  apt-add-repository -y ppa:deadsnakes/ppa
 
-RUN pip install --upgrade pip setuptools
-# delete apt package lists because we do not need them inflating our image
-RUN rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get -qy install --no-install-recommends \
+ build-essential \
+ language-pack-en \
+ locales \
+ curl \
+ pkg-config \
+ libmysqlclient-dev \
+ libssl-dev \
+ libffi-dev \
+ libsqlite3-dev \
+ git \
+ wget \
+ python3.12 \
+ python3.12-dev \
+ python3-pip
 
-RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+RUN pip install virtualenv
+
+ENV VIRTUAL_ENV=/venv
+RUN virtualenv -p python$PYTHON_VERSION $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+RUN pip install pip==24.0 setuptools==69.5.1
 
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
+ENV DJANGO_SETTINGS_MODULE=order_fulfillment.settings.production
 
 EXPOSE 8155
+
 RUN useradd -m --shell /bin/false app
 
 WORKDIR /edx/app/order-fulfillment
 
-FROM app as prod
+RUN mkdir -p requirements
 
-ENV DJANGO_SETTINGS_MODULE order_fulfillment.settings.production
-
-# Copy the requirements explicitly even though we copy everything below
-# this prevents the image cache from busting unless the dependencies have changed.
-COPY requirements/production.txt /edx/app/order-fulfillment/requirements/production.txt
-
-# Dependencies are installed as root so they cannot be modified by the application user.
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/order-fulfillment/main/requirements/production.txt
 RUN pip install -r requirements/production.txt
 
 RUN mkdir -p /edx/var/log
+
+RUN curl -L https://github.com/edx/order-fulfillment/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
@@ -62,25 +77,3 @@ USER app
 
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
 CMD gunicorn --workers=2 --name order-fulfillment -c /edx/app/order-fulfillment/order_fulfillment/docker_gunicorn_configuration.py --log-file - --max-requests=1000 order_fulfillment.wsgi:application
-
-# This line is after the requirements so that changes to the code will not
-# bust the image cache
-COPY order-fulfillment /edx/app/order-fulfillment
-
-FROM app as dev
-
-ENV DJANGO_SETTINGS_MODULE order_fulfillment.settings.devstack
-
-# Copy the requirements explicitly even though we copy everything below
-# this prevents the image cache from busting unless the dependencies have changed.
-COPY requirements/dev.txt /edx/app/order-fulfillment/requirements/dev.txt
-
-RUN pip install -r requirements/dev.txt
-
-# After the requirements so changes to the code will not bust the image cache
-COPY order-fulfillment /edx/app/order-fulfillment
-
-# Devstack related step for backwards compatibility
-RUN touch order_fulfillment/order_fulfillment_env
-
-CMD while true; do python ./manage.py runserver 0.0.0.0:8155; sleep 2; done
