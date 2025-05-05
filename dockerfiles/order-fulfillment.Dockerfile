@@ -64,12 +64,12 @@ WORKDIR /edx/app/order-fulfillment
 
 RUN mkdir -p requirements
 
-RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/order-fulfillment/main/requirements/production.txt
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/order-fulfillment/master/requirements/production.txt
 RUN pip install -r requirements/production.txt
 
 RUN mkdir -p /edx/var/log
 
-RUN curl -L https://github.com/edx/order-fulfillment/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+RUN curl -L https://github.com/edx/order-fulfillment/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
