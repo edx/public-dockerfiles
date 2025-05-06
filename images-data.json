@@ -1,12 +1,5 @@
 [
   {
-    "image_name": "order-fulfillment",
-    "name": "order-fulfillment",
-    "os_platform": "linux/amd64,linux/arm64",
-    "target": "app",
-    "owning_team_email": "sonic-team@2u.com"
-  },
-  {
     "image_name": "commerce-coordinator",
     "name": "commerce-coordinator",
     "os_platform": "linux/amd64,linux/arm64",

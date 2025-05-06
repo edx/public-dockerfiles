@@ -7,7 +7,6 @@ on:
         description: "Select an image that you want to build and push"
         type: choice
         options:
-          - order-fulfillment
           - commerce-coordinator
           - course-discovery
           - credentials
