@@ -164,9 +164,6 @@ COPY --from=builder-production /edx/app/edxapp/edx-platform/node_modules /edx/ap
 # Copy over remaining parts of repository (including all code)
 ADD https://github.com/openedx/edx-platform.git#${EDX_PLATFORM_VERSION} .
 
-# Pull out the vendor JS and CSS from the node modules.
-RUN npm run postinstall
-
 # Install Python requirements again in order to capture local projects
 RUN pip install -e .
 
