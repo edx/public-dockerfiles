@@ -48,11 +48,11 @@ ARG SANDBOX_DEPS_VERSION=master
 # to be coordinated with SANDBOX_PY_VER as each release has a
 # different Python support window.
 ARG SANDBOX_DEPS_SRC_DIR=requirements/edx-sandbox/releases
-ARG SANDBOX_DEPS_SRC_FILE=teak.txt
+ARG SANDBOX_DEPS_SRC_FILE=quince.txt
 
 # Python version for sandboxed executions. This must be coordinated with
 # `SANDBOX_DEPS_SRC_*` to ensure compatibility.
-ARG SANDBOX_PY_VER=3.12
+ARG SANDBOX_PY_VER=3.8
 
 
 ##### Base app installation #####
