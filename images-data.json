@@ -39,7 +39,7 @@
     "image_name": "edx-exams",
     "name": "edx-exams",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "app",
+    "target": "devstack",
     "owning_team_email": "team-cosmonauts@edx.org"
   },
   {
