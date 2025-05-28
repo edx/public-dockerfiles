@@ -184,6 +184,27 @@ ENV SERVICE_PORT="${SERVICE_PORT}"
 ENV DJANGO_SETTINGS_MODULE="${SERVICE_VARIANT}.envs.$EDX_PLATFORM_SETTINGS"
 EXPOSE ${SERVICE_PORT}
 
+# Build assets in the base image.
+
+ENV WEBPACK_CONFIG_PATH=webpack.prod.config.js
+# We will probably want to move this in the future for S3 storage.
+
+ENV STATIC_ROOT_LMS=/edx/var/edxapp/staticfiles
+ENV STATIC_ROOT_CMS=/edx/var/edxapp/staticfiles/studio
+# This is necessary to properly build webworkers, which depends on this value being a dictionary.
+ENV export JS_ENV_EXTRA_CONFIG={}
+
+# We need to make a call to a management command before running webpack because proctoring runs a webpack
+# webworker that only gets built if the proctoring djangoapp writes out a `workers.json`:
+# https://github.com/openedx/edx-proctoring/blob/73c7f55e2be91324fa07fec6e6ac0a667fdd8412/edx_proctoring/apps.py#L4
+# We know that `print_setting` will load settings and apps, which is what we
+# actually need. Yes, this is absurd.
+RUN ./manage.py ${SERVICE_VARIANT} print_setting LMS_BASE --settings=${DJANGO_SETTINGS_MODULE} > /dev/null
+
+# Build assets.
+RUN npm run webpack &&  npm run compile-sass -- --theme-dir /edx/var/edx-themes/edx-themes/edx-platform --theme-dir /edx/app/edxapp/edx-platform/themes
+
+RUN ./manage.py ${SERVICE_VARIANT} collectstatic --no-input
 CMD gunicorn \
     -c /edx/app/edxapp/edx-platform/${SERVICE_VARIANT}/docker_${SERVICE_VARIANT}_gunicorn.py \
     --name ${SERVICE_VARIANT} \
