@@ -39,7 +39,7 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
 RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
 RUN pip install virtualenv
 # create our Python virtual env
-ENV VIRTUAL_ENV=/edx/venvs/pie
+ENV VIRTUAL_ENV=/edx/venvs/program-intent-engagement
 RUN virtualenv -p python$PYTHON_VERSION $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
@@ -68,9 +68,6 @@ WORKDIR /edx/app/program-intent-engagement
 
 # Create required directories for requirements
 RUN mkdir -p requirements
-
-ARG INTENT_MANAGEMENT_VENV_DIR="/edx/app/venvs/program-intent-management"
-RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${INTENT_MANAGEMENT_VENV_DIR}
 
 # Dependencies are installed as root so they cannot be modified by the application user.
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/program-intent-engagement/main/requirements/production.txt
