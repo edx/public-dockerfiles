@@ -83,14 +83,6 @@ USER app
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
 CMD gunicorn --workers=2 --name enterprise_catalog -c /edx/app/enterprise-catalog/enterprise_catalog/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_catalog.wsgi:application
 
-###############################################################
-# Create newrelic image used by the experimental docker shim. #
-###############################################################
-# TODO: remove this after we migrate to k8s since it will serve no more purpose.
-FROM app AS newrelic
-RUN pip install newrelic
-CMD ["newrelic-admin", "run-program", "gunicorn", "--workers=2", "--name", "enterprise_catalog", "-c", "/edx/app/enterprise_catalog/enterprise_catalog/enterprise_catalog/docker_gunicorn_configuration.py", "--log-file", "-", "--max-requests=1000", "enterprise_catalog.wsgi:application"]
-
 #################################
 # Create image used by devstack #
 #################################
