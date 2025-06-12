@@ -106,12 +106,6 @@ USER app
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
 CMD gunicorn --workers=2 --name license_manager -c /edx/app/license_manager/license_manager/docker_gunicorn_configuration.py --log-file - --max-requests=1000 license_manager.wsgi:application
 
-
-FROM app as newrelic
-RUN pip install newrelic
-CMD newrelic-admin run-program gunicorn --workers=2 --name license_manager -c /edx/app/license_manager/license_manager/docker_gunicorn_configuration.py --log-file - --max-requests=1000 license_manager.wsgi:application
-
-
 FROM app as dev
 USER root
 RUN pip install -r /edx/app/license_manager/requirements/dev.txt
