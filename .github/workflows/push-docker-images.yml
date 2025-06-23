@@ -55,6 +55,10 @@ jobs:
           fi
   push:
     runs-on: ubuntu-22.04
+    # Keep building other images even if one of them fails. As a side effect,
+    # the overall workflow will still show up as having passed, but the
+    # important part is that notification emails should still be sent for the
+    # failing job.
     continue-on-error: true
     needs: [set-matrix]
 
