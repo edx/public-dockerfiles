@@ -14,6 +14,9 @@ FROM ubuntu:focal AS minimal-system
 # we want to fetch a single file, because ADD can only fetch entire directories.)
 ARG EDX_PLATFORM_VERSION=master
 
+# Version of openedx/openedx-translations repo to use when pulling Atlas translations.
+ARG OPENEDX_TRANSLATIONS_VERSION=main
+
 ARG DEBIAN_FRONTEND=noninteractive
 ARG SERVICE_VARIANT
 ARG SERVICE_PORT
@@ -170,6 +173,24 @@ RUN npm run postinstall
 # Install Python requirements again in order to capture local projects
 RUN pip install -e .
 
+# Install translations files. Note that this leaves the git working directory in
+# a "dirty" state.
+RUN <<EOF
+    set -eu
+
+    # Give Django a minimal config to allow management commands to run
+    export EDX_PLATFORM_SETTINGS=docker-production
+    export LMS_CFG=lms/envs/minimal.yml
+    export CMS_CFG=lms/envs/minimal.yml
+
+    export ATLAS_OPTIONS="--revision=$OPENEDX_TRANSLATIONS_VERSION"
+    # TODO(2025-06-25): Uncomment this. I'm debugging an issue in stage.
+    # This *shouldn't* be causing problems, but it seemed to cause a weird
+    # error around tracking logs.
+    # See https://github.com/edx/edx-arch-experiments/issues/1063
+    #make pull_translations
+EOF
+
 # Setting edx-platform directory as safe for git commands
 RUN git config --global --add safe.directory /edx/app/edxapp/edx-platform
 
@@ -203,6 +224,7 @@ RUN apt-get update && \
     apt-get clean all && \
     rm -rf /var/lib/apt/*
 
+# Overwrite production packages with development ones
 COPY --from=builder-development /edx/app/edxapp/venvs/edxapp /edx/app/edxapp/venvs/edxapp
 
 RUN ln -s "$(pwd)/lms/envs/devstack-experimental.yml" "$LMS_CFG"
