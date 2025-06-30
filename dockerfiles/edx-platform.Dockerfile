@@ -184,11 +184,7 @@ RUN <<EOF
     export CMS_CFG=lms/envs/minimal.yml
 
     export ATLAS_OPTIONS="--revision=$OPENEDX_TRANSLATIONS_VERSION"
-    # TODO(2025-06-25): Uncomment this. I'm debugging an issue in stage.
-    # This *shouldn't* be causing problems, but it seemed to cause a weird
-    # error around tracking logs.
-    # See https://github.com/edx/edx-arch-experiments/issues/1063
-    #make pull_translations
+    make pull_translations
 EOF
 
 # Setting edx-platform directory as safe for git commands
