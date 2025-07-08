@@ -105,7 +105,7 @@ RUN pip install -r requirements/production.txt
 
 RUN mkdir -p /edx/var/log
 
-# Cloning git repo.
+# Cloning git repo. This line is after the python requirements so that changes to the code will not bust the image cache
 ADD https://github.com/${CREDENTIALS_SERVICE_REPO}.git#${CREDENTIALS_SERVICE_VERSION} /edx/app/credentials/credentials
 
 # Fetch the translations into the image once the Makefile's in place
