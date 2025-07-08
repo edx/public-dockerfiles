@@ -108,9 +108,6 @@ RUN mkdir -p /edx/var/log
 # Cloning git repo. This line is after the python requirements so that changes to the code will not bust the image cache
 ADD https://github.com/${CREDENTIALS_SERVICE_REPO}.git#${CREDENTIALS_SERVICE_VERSION} /edx/app/credentials/credentials
 
-# Fetch the translations into the image once the Makefile's in place
-RUN make pull_translations
-
 # Install frontend dependencies in node_modules directory
 RUN npm install --no-save
 ENV NODE_BIN=/edx/app/credentials/credentials/node_modules
@@ -131,7 +128,7 @@ CMD gunicorn --workers=2 --name credentials -c /edx/app/credentials/credentials/
 FROM base AS dev
 USER root
 
-RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/{CREDENTIALS_SERVICE_VERSION}/py_configuration_files/credentials.py
+RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/${CREDENTIALS_SERVICE_VERSION}/py_configuration_files/credentials.py
 
 ENV DJANGO_SETTINGS_MODULE=credentials.settings.devstack
 RUN pip install -r /edx/app/credentials/credentials/requirements/dev.txt
