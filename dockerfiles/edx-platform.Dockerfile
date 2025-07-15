@@ -184,7 +184,12 @@ RUN <<EOF
     export CMS_CFG=lms/envs/minimal.yml
 
     export ATLAS_OPTIONS="--revision=$OPENEDX_TRANSLATIONS_VERSION"
-    make pull_translations
+    # FIXME(2025-07-15): The problem is that `make pull_translations` needs to
+    #   make some modifications to the (root-owned) repo files, but we don't
+    #   want it to incidentally write files elsewhere as root that should be
+    #   owned by app, such as /var/log/tracking_logs.log. See
+    #   https://github.com/edx/edx-arch-experiments/issues/1082
+    #make pull_translations
 EOF
 
 # Setting edx-platform directory as safe for git commands
