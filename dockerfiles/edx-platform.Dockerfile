@@ -157,7 +157,7 @@ RUN curl -L -o requirements/edx/development.txt https://raw.githubusercontent.co
 RUN pip install -r requirements/edx/development.txt
 
 # base stage
-FROM minimal-system AS base
+FROM minimal-system AS base-system
 
 # Copy python virtual environment, nodejs and node_modules
 COPY --from=builder-production /edx/app/edxapp/venvs/edxapp /edx/app/edxapp/venvs/edxapp
@@ -173,6 +173,9 @@ RUN npm run postinstall
 # Install Python requirements again in order to capture local projects
 RUN pip install -e .
 
+# Translations stage to handle translations.
+FROM base-system AS translations-base
+
 # Install translations files. Note that this leaves the git working directory in
 # a "dirty" state.
 RUN <<EOF
@@ -184,13 +187,15 @@ RUN <<EOF
     export CMS_CFG=lms/envs/minimal.yml
 
     export ATLAS_OPTIONS="--revision=$OPENEDX_TRANSLATIONS_VERSION"
-    # FIXME(2025-07-15): The problem is that `make pull_translations` needs to
-    #   make some modifications to the (root-owned) repo files, but we don't
-    #   want it to incidentally write files elsewhere as root that should be
-    #   owned by app, such as /var/log/tracking_logs.log. See
-    #   https://github.com/edx/edx-arch-experiments/issues/1082
-    #make pull_translations
+    make pull_translations
 EOF
+
+FROM base-system AS base
+
+# Only copy over the edx-platform files. The git working directory is still in a "dirty" state.
+# We need the whole directory because some of the JS files are also translated and put into
+# static directories throughout the file tree.
+COPY --from=translations-base /edx/app/edxapp/edx-platform /edx/app/edxapp/edx-platform
 
 # Setting edx-platform directory as safe for git commands
 RUN git config --global --add safe.directory /edx/app/edxapp/edx-platform
