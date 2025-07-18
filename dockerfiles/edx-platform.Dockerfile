@@ -202,7 +202,7 @@ FROM app-deps AS base
 # Only copy over the edx-platform files. The git working directory is still in a "dirty" state.
 # We need the whole directory because some of the JS files are also translated and put into
 # static directories throughout the file tree.
-COPY --from=translations-base /edx/app/edxapp/edx-platform /edx/app/edxapp/edx-platform
+COPY --from=translations /edx/app/edxapp/edx-platform /edx/app/edxapp/edx-platform
 
 # Setting edx-platform directory as safe for git commands
 RUN git config --global --add safe.directory /edx/app/edxapp/edx-platform
