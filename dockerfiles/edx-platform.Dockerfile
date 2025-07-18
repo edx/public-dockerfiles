@@ -174,6 +174,12 @@ RUN npm run postinstall
 RUN pip install -e .
 
 # Translations stage to handle translations.
+#
+# This is a separate stage because `make pull_translations` needs to run as root
+# to write into the repo, but in the process inadvertently writes files as root
+# elsewhere in the filesystem that should be owned by app. (The known example is
+# `/var/tmp/tracking_logs.log`, which is created on Django startup.) Separating
+# out the stage allows us to shed all of the unwanted out-of-repo changes.
 FROM base-system AS translations-base
 
 # Install translations files. Note that this leaves the git working directory in
