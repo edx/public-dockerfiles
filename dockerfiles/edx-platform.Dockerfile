@@ -167,6 +167,21 @@ COPY --from=builder-production /edx/app/edxapp/edx-platform/node_modules /edx/ap
 # Copy over remaining parts of repository (including all code)
 ADD https://github.com/openedx/edx-platform.git#${EDX_PLATFORM_VERSION} .
 
+# Create a docker-production Django settings file. This is just production.py
+# but with adjustments for logging in a Docker environment. We'll use this in
+# both development and production.
+RUN <<EOCMD
+    set -eu
+
+    cat > lms/envs/docker-production.py <<'EOF'
+from .production import *  # pylint: disable=wildcard-import, unused-wildcard-import
+from openedx.core.lib.logsettings import get_docker_logger_config
+LOGGING = get_docker_logger_config()
+EOF
+
+    cp lms/envs/docker-production.py cms/envs/docker-production.py
+EOCMD
+
 # Pull out the vendor JS and CSS from the node modules.
 RUN npm run postinstall
 
