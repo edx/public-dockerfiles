@@ -263,7 +263,7 @@ RUN ln -s "$(pwd)/cms/envs/devstack-experimental.yml" "$CMS_CFG"
 RUN ln -s "$(pwd)/cms/envs/devstack-experimental.yml" "/edx/etc/studio.yml"
 RUN touch ../edxapp_env
 
-ENV EDX_PLATFORM_SETTINGS='devstack_docker'
+ENV EDX_PLATFORM_SETTINGS='devstack'
 ENV SERVICE_VARIANT="${SERVICE_VARIANT}"
 EXPOSE ${SERVICE_PORT}
 CMD ./manage.py ${SERVICE_VARIANT} runserver 0.0.0.0:${SERVICE_PORT}
