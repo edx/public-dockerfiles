@@ -24,7 +24,6 @@ RUN apt-get upgrade -qy && \
     pkg-config wget unzip && \
     rm -rf /var/lib/apt/lists/*
 
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 1
 
 # need to use virtualenv pypi package with Python 3.11
