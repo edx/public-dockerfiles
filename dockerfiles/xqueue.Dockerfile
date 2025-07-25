@@ -13,15 +13,15 @@ RUN apt-get update && \
 
 # System requirements
 
-RUN apt-get update && \
-    apt-get upgrade -qy \
+RUN apt-get upgrade -qy && \
+    apt-get install -qy \
     build-essential \
     language-pack-en locales git curl \
     python${PYTHON_VERSION} \
     python${PYTHON_VERSION}-dev \
-    python${PYTHON_VERSION}-distutils \ 
-    libmysqlclient-dev libssl-dev \ 
-    pkg-config wget unzip -qy && \
+    python${PYTHON_VERSION}-distutils \
+    libmysqlclient-dev libssl-dev \
+    pkg-config wget unzip && \
     rm -rf /var/lib/apt/lists/*
 
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1
