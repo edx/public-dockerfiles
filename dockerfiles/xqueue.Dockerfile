@@ -1,14 +1,34 @@
 FROM ubuntu:focal AS app
 
+# ENV variables for Python 3.11 support
+ARG PYTHON_VERSION=3.11
+ENV TZ=UTC
+ENV TERM=xterm-256color
+ENV DEBIAN_FRONTEND=noninteractive
+
+# software-properties-common is needed to setup Python 3.11 env
+RUN apt-get update && \
+  apt-get install -y software-properties-common && \
+  apt-add-repository -y ppa:deadsnakes/ppa
+
 # System requirements
 
-RUN apt-get update && \
-    apt-get upgrade -qy && DEBIAN_FRONTEND=noninteractive apt-get install language-pack-en locales git curl \
-    python3.8-dev python3-virtualenv libmysqlclient-dev libssl-dev build-essential pkg-config wget unzip -qy && \
+RUN apt-get upgrade -qy && \
+    apt-get install -qy \
+    build-essential \
+    language-pack-en locales git curl \
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    python${PYTHON_VERSION}-distutils \
+    libmysqlclient-dev libssl-dev \
+    pkg-config wget unzip && \
     rm -rf /var/lib/apt/lists/*
 
-# Python is Python3.
-RUN ln -s /usr/bin/python3 /usr/bin/python
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 1
+
+# need to use virtualenv pypi package with Python 3.11
+RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
+RUN pip install virtualenv
 
 # Use UTF-8.
 RUN locale-gen en_US.UTF-8
@@ -29,7 +49,7 @@ WORKDIR ${XQUEUE_CODE_DIR}
 
 RUN mkdir -p requirements
 
-RUN virtualenv -p python3.8 --always-copy ${XQUEUE_VENV_DIR}
+RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${XQUEUE_VENV_DIR}
 
 # Create placeholder file for devstack provisioning, if needed
 RUN touch ${XQUEUE_APP_DIR}/xqueue_env
