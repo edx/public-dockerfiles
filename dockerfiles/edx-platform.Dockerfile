@@ -255,12 +255,10 @@ RUN apt-get update && \
 # Overwrite production packages with development ones
 COPY --from=builder-development /edx/app/edxapp/venvs/edxapp /edx/app/edxapp/venvs/edxapp
 
-RUN ln -s "$(pwd)/lms/envs/devstack-experimental.yml" "$LMS_CFG"
-RUN ln -s "$(pwd)/cms/envs/devstack-experimental.yml" "$CMS_CFG"
-# Temporary compatibility hack while devstack is supporting both the old `edxops/edxapp` image and this image.
-# * Add in a dummy ../edxapp_env file
-# * devstack sets /edx/etc/studio.yml as CMS_CFG.
-RUN ln -s "$(pwd)/cms/envs/devstack-experimental.yml" "/edx/etc/studio.yml"
+RUN ln -s "$(pwd)/lms/envs/minimal.yml" "$LMS_CFG"
+RUN ln -s "$(pwd)/cms/envs/minimal.yml" "$CMS_CFG"
+
+# Add in a dummy ../edxapp_env file
 RUN touch ../edxapp_env
 
 ENV EDX_PLATFORM_SETTINGS='devstack'
