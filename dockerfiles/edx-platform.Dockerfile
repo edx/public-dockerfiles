@@ -255,9 +255,6 @@ RUN apt-get update && \
 # Overwrite production packages with development ones
 COPY --from=builder-development /edx/app/edxapp/venvs/edxapp /edx/app/edxapp/venvs/edxapp
 
-RUN ln -s "$(pwd)/lms/envs/minimal.yml" "$LMS_CFG"
-RUN ln -s "$(pwd)/cms/envs/minimal.yml" "$CMS_CFG"
-
 # Add in a dummy ../edxapp_env file
 RUN touch ../edxapp_env
 
