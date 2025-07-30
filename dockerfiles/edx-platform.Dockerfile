@@ -1,31 +1,35 @@
-FROM ubuntu:focal AS minimal-system
-
-# Version of edx-platform repo to use.
+# Source version args are declared before the first build stage and then
+# re-declared just before their point-of-use in each stage that needs them (if
+# it doesn't already inherit them from another stage). This is to optimize
+# caching, as these args will change very frequently and we want to minimize
+# cache misses.
 #
-# This should be overridden with a full commit hash in order to get repeatable,
+# These should be overridden with a full commit hash in order to get repeatable,
 # consistent builds.
 #
 # A branch can be used during development, but will likely result in images
-# containing a mix of code from different versions of edx-platform due to how
+# containing a mix of code from different versions of the repo due to how
 # Docker's caching mechanism works -- RUN commands are cached based on their
 # textual value. All RUN commands that refer to master or this variable will
 # need to be converted to ADD commands if you want to be able to pass a branch
 # to this arg and have it work consistently. (The main blocker is places where
 # we want to fetch a single file, because ADD can only fetch entire directories.)
 ARG EDX_PLATFORM_VERSION=master
-
-# Version of openedx/openedx-translations repo to use when pulling Atlas translations.
 ARG OPENEDX_TRANSLATIONS_VERSION=main
 
-ARG DEBIAN_FRONTEND=noninteractive
+
+FROM ubuntu:focal AS minimal-system
+
 ARG SERVICE_VARIANT
 ARG SERVICE_PORT
 
-# Env vars: paver
-# We intentionally don't use paver in this Dockerfile, but Devstack may invoke paver commands
-# during provisioning. Enabling NO_PREREQ_INSTALL tells paver not to re-install Python
-# requirements for every paver command, potentially saving a lot of developer time.
-ARG NO_PREREQ_INSTALL='1'
+# Env vars: apt
+# We need to tell apt not to try to ask us questions interactively, e.g.
+# confirmation prompts.
+#
+# Doing this as an ARG instead of ENV allows us to only affect built-time
+# invocations without changing the runtime environment, e.g. in devstack.
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Env vars: locale
 ENV LANG='en_US.UTF-8'
@@ -94,6 +98,7 @@ RUN mkdir -p /edx/var/edxapp
 RUN mkdir -p /edx/etc
 RUN chown app:app /edx/var/edxapp
 
+
 # The builder-production stage is a temporary stage that installs required packages and builds the python virtualenv,
 # installs nodejs and node_modules.
 # The built artifacts from this stage are then copied to the base stage.
@@ -117,6 +122,8 @@ RUN apt-get update && \
 # Setup python virtual environment
 # It is already 'activated' because $VIRTUAL_ENV/bin was put on $PATH
 RUN python3.11 -m venv "${VIRTUAL_ENV}"
+
+ARG EDX_PLATFORM_VERSION
 
 # Install python requirements
 # Requires copying over requirements files, but not entire repository
@@ -148,6 +155,7 @@ RUN curl -L -o package-lock.json https://raw.githubusercontent.com/openedx/edx-p
 RUN chmod +x scripts/copy-node-modules.sh
 RUN npm set progress=false && npm ci
 
+
 # The builder-development stage is a temporary stage that installs python modules required for development purposes
 # The built artifacts from this stage are then copied to the development stage.
 FROM builder-production AS builder-development
@@ -155,6 +163,7 @@ FROM builder-production AS builder-development
 RUN curl -L -o requirements/edx/development.txt https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/requirements/edx/development.txt
 
 RUN pip install -r requirements/edx/development.txt
+
 
 # Install dependencies for Python and Node for the translations stage and the final base stage.
 FROM minimal-system AS app-deps
@@ -188,6 +197,7 @@ RUN npm run postinstall
 # Install Python requirements again in order to capture local projects
 RUN pip install -e .
 
+
 # Translations stage to handle pulling and generating translations.
 #
 # This is a separate stage because `make pull_translations` needs to run as root
@@ -196,6 +206,8 @@ RUN pip install -e .
 # `/var/tmp/tracking_logs.log`, which is created on Django startup.) Separating
 # out the stage allows us to shed all of the unwanted out-of-repo changes.
 FROM app-deps AS translations
+
+ARG OPENEDX_TRANSLATIONS_VERSION
 
 # Install translations files. Note that this leaves the git working directory in
 # a "dirty" state.
@@ -211,6 +223,7 @@ RUN <<EOF
     make pull_translations
 EOF
 
+
 # Create the base stage for future development and production stages with dependencies and translations included.
 FROM app-deps AS base
 
@@ -222,7 +235,8 @@ COPY --from=translations /edx/app/edxapp/edx-platform /edx/app/edxapp/edx-platfo
 # Setting edx-platform directory as safe for git commands
 RUN git config --global --add safe.directory /edx/app/edxapp/edx-platform
 
-# Production target
+
+# Production target, for use in all deployed environments (stage, prod, edge).
 FROM base AS production
 
 USER app
@@ -241,7 +255,8 @@ CMD gunicorn \
     --access-logfile \
     - ${SERVICE_VARIANT}.wsgi:application
 
-# Development target
+
+# Development target, e.g. for use in devstack.
 FROM base AS development
 
 RUN apt-get update && \
