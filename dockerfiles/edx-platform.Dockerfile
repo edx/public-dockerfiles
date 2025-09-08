@@ -173,6 +173,8 @@ COPY --from=builder-production /edx/app/edxapp/venvs/edxapp /edx/app/edxapp/venv
 COPY --from=builder-production /edx/app/edxapp/nodeenv /edx/app/edxapp/nodeenv
 COPY --from=builder-production /edx/app/edxapp/edx-platform/node_modules /edx/app/edxapp/edx-platform/node_modules
 
+ARG EDX_PLATFORM_VERSION
+
 # Copy over remaining parts of repository (including all code)
 ADD https://github.com/openedx/edx-platform.git#${EDX_PLATFORM_VERSION} .
 
