@@ -32,11 +32,27 @@ Locally build the images
 
 We can locally build and test the images. Following steps are to be taken to test the images.
 
-1. Clone the repository
+1. Clone the repository into ``~/{WORKSPACE}/``
+2. Navigate to your repository by using ``cd ~/{WORKSPACE}/{REPO}/``
 2. Build the image using following command: ``docker build -t <image-name>:<tag> --target <target> -f <path-to-your-dockerfile> . --progress=plain`` (or you can go with your custom tag for testing)
+   i. For example, to build edx-platform cms, you can use the following command: ``docker build -t edx-platform:dev --target development -f ~/{WORKSPACE}/public-dockerfiles/dockerfiles/edx-platform.Dockerfile ~/{WORKSPACE}/edx-platform --build-arg=SERVICE_VARIANT="cms" --build-arg=SERVICE_PORT="18010" --progress=plain``
 3. Once the image is built, you can run the container for that image using the following command: ``docker container run --name <name-for-container> <name-of-image-built>``
+   i. For example, to run the edx-platform image built in previous step, you can use the following command: ``docker container run --name edx-platform-dev edx-platform:dev`` 
 4. Once the container runs, you can enter the shell using this command: ``docker exec -it <container-name> <shell-executable>``
+   i. For example, to enter the shell of edx-platform container, you can use the following command: ``docker exec -it edx-platform-dev /bin/bash``
 5. You can run commands in shell and test if the image is is built correctly and container is running smoothly.
+
+Building images with BuildKit
+*****************************
+The dockerfiles in public-dockerfiles may require to be built with buildx/BuildKit, the new docker build system.
+
+1. run ``brew install docker-buildx``
+2. Make sure buildx is available for the local user
+   a. ``mkdir -p ~/.docker/cli-plugins``
+   b. ``ln -sfn /opt/homebrew/opt/docker-buildx/bin/docker-buildx ~/.docker/cli-plugins/docker-buildx``
+3. To run docker build with buildkit, use the buildx command-
+   a. Navigate to the folder with the ``edx-platform.Dockerfile``
+   b. ``docker buildx build -f edx-platform.Dockerfile …``
 
 Authoring
 *********
