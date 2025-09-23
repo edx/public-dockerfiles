@@ -44,14 +44,7 @@ We can locally build and test the images. Following steps are to be taken to tes
 Building images with BuildKit (Mac only)
 ****************************************
 For Macs, the dockerfiles in public-dockerfiles may be built with buildx/BuildKit, the new docker build system.
-
-1. run ``brew install docker-buildx``
-2. Make sure buildx is available for the local user
-   a. ``mkdir -p ~/.docker/cli-plugins``
-   b. ``ln -sfn /opt/homebrew/opt/docker-buildx/bin/docker-buildx ~/.docker/cli-plugins/docker-buildx``
-3. To run docker build with buildkit, use the buildx command-
-   a. Navigate to the folder with the ``edx-platform.Dockerfile``
-   b. ``docker buildx build -f edx-platform.Dockerfile …``
+Please see `docs for setting up Colima for devstack`_ for instructions to build with Buildkit.
 
 Authoring
 *********
