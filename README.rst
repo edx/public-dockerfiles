@@ -37,13 +37,13 @@ We can locally build and test the images. Following steps are to be taken to tes
 2. Build the image using following command: ``docker build -t <image-name>:<tag> --target <target> -f <path-to-your-dockerfile> . --progress=plain`` (or you can go with your custom tag for testing)
    i. For example, to build edx-platform cms, you can use the following command: ``docker build -t edx-platform:dev --target development -f ~/{WORKSPACE}/public-dockerfiles/dockerfiles/edx-platform.Dockerfile ~/{WORKSPACE}/edx-platform --build-arg=SERVICE_VARIANT="cms" --build-arg=SERVICE_PORT="18010" --progress=plain``
 3. Once the image is built, you can inspect the image with a shell by running ``docker run -it --rm <image-name>:<tag> bash -c "/bin/bash"``
-4. To run the container for the image, you must use devstack. Please see `docs for setting up Colima for devstack`.
+4. To run the container for the image, you must use devstack. Please see `docs for setting up Colima for devstack`_.
 
 .. _docs for setting up Colima for devstack: https://2u-internal.atlassian.net/wiki/spaces/ENG/pages/894140516/Setting+up+Colima+for+devstack
 
-Building images with BuildKit
-*****************************
-The dockerfiles in public-dockerfiles may be built with buildx/BuildKit, the new docker build system.
+Building images with BuildKit (Mac only)
+****************************************
+For Macs, the dockerfiles in public-dockerfiles may be built with buildx/BuildKit, the new docker build system.
 
 1. run ``brew install docker-buildx``
 2. Make sure buildx is available for the local user
