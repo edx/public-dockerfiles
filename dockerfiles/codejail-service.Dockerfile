@@ -170,11 +170,6 @@ RUN { \
 # knowing where the virtualenv is located.
 ENV PATH="/venv/bin:$PATH"
 
-EXPOSE 8080
-CMD /venv/bin/gunicorn -c /app/codejail_service/docker_gunicorn_configuration.py \
-    --bind '0.0.0.0:8080' --workers=10 --max-requests=1000 \
-    codejail_service.wsgi:application
-
 
 ##### Development target #####
 
