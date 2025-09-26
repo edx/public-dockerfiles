@@ -1,31 +1,10 @@
 Dockerfiles and image publish workflows
 #######################################
 
-Under the `epic <https://github.com/edx/public-dockerfiles/issues/12>`__ to remove dockerfiles and workflow setup for devstack, dockerfiles were moved to this repository.
+Base dockerfiles for edX services. These files are used in two ways:
 
-Overview
-********
-
-This repository aims to streamline all the dockerfiles and docker images publishing from a single source. Images for the following services are included in this repo.
-
-- commerce-coordinator
-- codejail-service
-- course-discovery
-- credentials
-- ecommerce
-- edx-analytics-dashboard
-- edx-analytics-data-api
-- edx-exams
-- edx-notes-api
-- edx-platform
-- enterprise-access
-- enterprise-subsidy
-- enterprise-catalog
-- license-manager
-- portal-designer
-- program-intent-engagement
-- registrar
-- xqueue
+- Devstack: GH workflows in this repo build the images and upload them to a public docker repository, for use in devstack.
+- Deployments: GoCD pipelines build these images and upload to a *private* repository, then build on top of them with the dockerfiles in <https://github.com/edx/internal-dockerfiles>, producing the images actually used in deployments.
 
 Locally build the images
 ************************
@@ -50,21 +29,6 @@ Authoring
 *********
 
 See ``docs/dockerfile-tips.rst`` for additional information on writing Dockerfiles for 2U's infrastructure, environment, and standards.
-
-Repository Structure
-********************
-
-.. code:: plaintext
-
-   ├── dockerfiles/
-   │   ├── ida1.Dockerfile
-   │   ├── ida2.Dockerfile
-   │   ├── ...
-   │   └── idaN.Dockerfile
-   ├── workflows/
-   │   └── push-docker-images.yml
-   ├── README.md
-   └── .gitignore
 
 Handling image publish failures
 *******************************
