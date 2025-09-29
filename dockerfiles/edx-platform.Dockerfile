@@ -133,6 +133,8 @@ ARG EDX_PLATFORM_VERSION
 # Install python requirements
 # Requires copying over requirements files, but not entire repository
 RUN --mount=type=secret,id=GIT_AUTH_TOKEN \
+    # Note that this results in `https://@domain/...` (empty userinfo component, with @ delimiter)
+    # when there's no token available. Doesn't seem to be a problem, though.
     gh_auth="$(cat /run/secrets/GIT_AUTH_TOKEN || true)@" && \
     mkdir -p requirements/edx && \
     curl -fLsS -o requirements/pip.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/pip.txt && \
