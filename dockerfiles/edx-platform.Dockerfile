@@ -3,7 +3,11 @@
 # it doesn't already inherit them from another stage). This is to optimize
 # caching, as these args will change very frequently and we want to minimize
 # cache misses.
-#
+
+# This can be overridden with a private fork but you'll need to pass
+# --secret id=GIT_AUTH_TOKEN,env=GITHUB_TOKEN with a GH token in the env.
+ARG EDX_PLATFORM_REPO=openedx/edx-platform
+
 # These should be overridden with a full commit hash in order to get repeatable,
 # consistent builds.
 #
@@ -123,15 +127,19 @@ RUN apt-get update && \
 # It is already 'activated' because $VIRTUAL_ENV/bin was put on $PATH
 RUN python3.11 -m venv "${VIRTUAL_ENV}"
 
+ARG EDX_PLATFORM_REPO
 ARG EDX_PLATFORM_VERSION
 
 # Install python requirements
 # Requires copying over requirements files, but not entire repository
-RUN mkdir -p requirements/edx
-RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/requirements/pip.txt
-RUN curl -L -o requirements/edx/base.txt https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/requirements/edx/base.txt
-RUN curl -L -o requirements/edx/assets.txt https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/requirements/edx/assets.txt
-
+RUN --mount=type=secret,id=GIT_AUTH_TOKEN \
+    # Note that this results in `https://@domain/...` (empty userinfo component, with @ delimiter)
+    # when there's no token available. Doesn't seem to be a problem, though.
+    gh_auth="$(cat /run/secrets/GIT_AUTH_TOKEN || true)@" && \
+    mkdir -p requirements/edx && \
+    curl -fLsS -o requirements/pip.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/pip.txt && \
+    curl -fLsS -o requirements/edx/base.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/base.txt && \
+    curl -fLsS -o requirements/edx/assets.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/assets.txt
 
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/edx/base.txt
@@ -144,12 +152,14 @@ RUN npm install -g npm@10.5.x
 # This script is used by an npm post-install hook.
 # We copy it into the image now so that it will be available when we run `npm install` in the next step.
 # The script itself will copy certain modules into some uber-legacy parts of edx-platform which still use RequireJS.
+#
+# Then, we also grab the packages list to install.
 RUN mkdir scripts
-RUN curl -L -o scripts/copy-node-modules.sh https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/scripts/copy-node-modules.sh
-
-# Install node modules
-RUN curl -L -o package.json https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/package.json
-RUN curl -L -o package-lock.json https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/package-lock.json
+RUN --mount=type=secret,id=GIT_AUTH_TOKEN \
+    gh_auth="$(cat /run/secrets/GIT_AUTH_TOKEN || true)@" && \
+    curl -fLsS -o scripts/copy-node-modules.sh https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/scripts/copy-node-modules.sh && \
+    curl -fLsS -o package.json https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/package.json && \
+    curl -fLsS -o package-lock.json https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/package-lock.json
 
 
 RUN chmod +x scripts/copy-node-modules.sh
@@ -160,7 +170,11 @@ RUN npm set progress=false && npm ci
 # The built artifacts from this stage are then copied to the development stage.
 FROM builder-production AS builder-development
 
-RUN curl -L -o requirements/edx/development.txt https://raw.githubusercontent.com/openedx/edx-platform/${EDX_PLATFORM_VERSION}/requirements/edx/development.txt
+ARG EDX_PLATFORM_REPO
+
+RUN --mount=type=secret,id=GIT_AUTH_TOKEN \
+    gh_auth="$(cat /run/secrets/GIT_AUTH_TOKEN || true)@" && \
+    curl -fLsS -o requirements/edx/development.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/development.txt
 
 RUN pip install -r requirements/edx/development.txt
 
@@ -173,10 +187,11 @@ COPY --from=builder-production /edx/app/edxapp/venvs/edxapp /edx/app/edxapp/venv
 COPY --from=builder-production /edx/app/edxapp/nodeenv /edx/app/edxapp/nodeenv
 COPY --from=builder-production /edx/app/edxapp/edx-platform/node_modules /edx/app/edxapp/edx-platform/node_modules
 
+ARG EDX_PLATFORM_REPO
 ARG EDX_PLATFORM_VERSION
 
 # Copy over remaining parts of repository (including all code)
-ADD https://github.com/openedx/edx-platform.git#${EDX_PLATFORM_VERSION} .
+ADD https://github.com/${EDX_PLATFORM_REPO}.git#${EDX_PLATFORM_VERSION} .
 
 # Create a docker-production Django settings file. This is just production.py
 # but with adjustments for logging in a Docker environment. We'll use this in
