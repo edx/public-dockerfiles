@@ -1,6 +1,11 @@
 Dockerfile tips
 ###############
 
+No CMD
+******
+
+Don't include a ``CMD`` instruction (or ``EXPOSE``, or ``ENTRYPOINT``). We provide a command (and port mapping) in devstack and in our helm charts, and so a command in the image will always be overridden. It's best to just omit it to avoid confusion about what command is actually being run.
+
 App user
 ********
 
