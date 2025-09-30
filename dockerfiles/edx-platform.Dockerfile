@@ -264,14 +264,6 @@ ENV SERVICE_PORT="${SERVICE_PORT}"
 ENV DJANGO_SETTINGS_MODULE="${SERVICE_VARIANT}.envs.$EDX_PLATFORM_SETTINGS"
 EXPOSE ${SERVICE_PORT}
 
-CMD gunicorn \
-    -c /edx/app/edxapp/edx-platform/${SERVICE_VARIANT}/docker_${SERVICE_VARIANT}_gunicorn.py \
-    --name ${SERVICE_VARIANT} \
-    --bind=0.0.0.0:${SERVICE_PORT} \
-    --max-requests=1000 \
-    --access-logfile \
-    - ${SERVICE_VARIANT}.wsgi:application
-
 
 # Development target, e.g. for use in devstack.
 FROM base AS development
@@ -293,4 +285,3 @@ RUN touch ../edxapp_env
 ENV EDX_PLATFORM_SETTINGS='devstack'
 ENV SERVICE_VARIANT="${SERVICE_VARIANT}"
 EXPOSE ${SERVICE_PORT}
-CMD ./manage.py ${SERVICE_VARIANT} runserver 0.0.0.0:${SERVICE_PORT}

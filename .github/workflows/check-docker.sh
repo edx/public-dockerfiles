@@ -14,7 +14,6 @@ function is_amnesty_path {
 ./dockerfiles/edx-analytics-data-api.Dockerfile
 ./dockerfiles/edx-exams.Dockerfile
 ./dockerfiles/edx-notes-api.Dockerfile
-./dockerfiles/edx-platform.Dockerfile
 ./dockerfiles/enterprise-access.Dockerfile
 ./dockerfiles/enterprise-catalog.Dockerfile
 ./dockerfiles/enterprise-subsidy.Dockerfile
