@@ -22,7 +22,7 @@ ARG EDX_PLATFORM_VERSION=master
 ARG OPENEDX_TRANSLATIONS_VERSION=main
 
 
-FROM ubuntu:focal AS minimal-system
+FROM ubuntu:jammy AS minimal-system
 
 ARG SERVICE_VARIANT
 ARG SERVICE_PORT
@@ -82,7 +82,7 @@ RUN apt-get update && \
         # libmysqlclient-dev: required for building mysqlclient python package
         libmysqlclient-dev \
         pkg-config \
-        libssl1.1 \
+        libssl3 \
         libxmlsec1-openssl \
         # lynx: Required by https://github.com/openedx/edx-platform/blob/b489a4ecb122/openedx/core/lib/html_to_text.py#L16
         lynx \
