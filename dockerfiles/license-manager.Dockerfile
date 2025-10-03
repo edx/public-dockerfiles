@@ -1,4 +1,4 @@
-FROM ubuntu:focal as app
+FROM ubuntu:jammy as app
 MAINTAINER devops@edx.org
 
 
