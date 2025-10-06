@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # check=skip=SecretsUsedInArgOrEnv
 # SecretsUsedInArgOrEnv check gets false positives on the name CREDENTIALS
-FROM ubuntu:focal AS base
+FROM ubuntu:jammy AS base
 
 ARG CREDENTIALS_SERVICE_REPO=openedx/credentials
 ARG CREDENTIALS_SERVICE_VERSION=master
