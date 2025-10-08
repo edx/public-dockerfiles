@@ -22,7 +22,7 @@ ARG EDX_PLATFORM_VERSION=master
 ARG OPENEDX_TRANSLATIONS_VERSION=main
 
 
-FROM ubuntu:jammy AS minimal-system
+FROM ubuntu:focal AS minimal-system
 
 ARG SERVICE_VARIANT
 ARG SERVICE_PORT
@@ -61,28 +61,34 @@ RUN useradd -m --shell /bin/false app
 RUN echo "locales locales/default_environment_locale select en_US.UTF-8" | debconf-set-selections
 RUN echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8" | debconf-set-selections
 
-# Setting up ppa deadsnakes to get python 3.11
+# deadsnakes PPA allows us to get older Python versions than what the OS
+# repos provide (specifically 3.11).
+#
+# NOTE: This won't be used for Python 3.11 until we're off of Ubuntu Focal,
+# which is EOL; deadsnakes no longer has these packages. See BOMS-239 and
+# BOMS-238.
 RUN apt-get update && \
   apt-get install -y software-properties-common && \
   apt-add-repository -y ppa:deadsnakes/ppa
 
-# Install requirements that are absolutely necessary
+# Install requirements needed for runtime and for some build steps.
 RUN apt-get update && \
     apt-get -y dist-upgrade && \
     apt-get -y install --no-install-recommends \
         curl \
-        python3-pip \
-        python3.11 \
-        # python3-dev: required for building mysqlclient python package
-        python3.11-dev \
-        python3.11-venv \
-        libpython3.11 \
-        libpython3.11-stdlib \
+        # Packages to restore to the installation list once we're on a supported
+        # version of Ubuntu. See BOMS-239.
+        #
+        # python3-pip \
+        # python3.11 \
+        # # python3-dev: required for building mysqlclient python package
+        # python3.11-dev \
+        # python3.11-venv \
         libmysqlclient21 \
         # libmysqlclient-dev: required for building mysqlclient python package
         libmysqlclient-dev \
         pkg-config \
-        libssl3 \
+        libssl1.1 \
         libxmlsec1-openssl \
         # lynx: Required by https://github.com/openedx/edx-platform/blob/b489a4ecb122/openedx/core/lib/html_to_text.py#L16
         lynx \
@@ -97,6 +103,60 @@ RUN apt-get update && \
     && \
     apt-get clean all && \
     rm -rf /var/lib/apt/*
+
+# This section is a hack for installing Python 3.11 on out-of-support
+# Ubuntu. These packages are built using the deadsnakes py3.11 repo and runbook.
+
+RUN <<EOCMD
+    set -eu
+    # Packages that are needed for installing the vendored Python packages, but
+    # that can be found in the regular Ubuntu repositories. See BOMS-239. This
+    # bit should be entirely removed once we're installing Python 3.11 via apt.
+    apt-get update
+    apt-get -y install --no-install-recommends \
+      libexpat1 libexpat1-dev mime-support tzdata libreadline8 libsqlite3-0
+EOCMD
+
+RUN <<EOCMD
+#!/usr/bin/env bash
+    set -eu -o pipefail
+    # Base URL for deb packages. For repeatability, we hardcode a
+    # commit. (Normally this would be done using a build arg, but this is
+    # intended as a quick hack.)
+    url_base="https://raw.githubusercontent.com/edx/vendored/c4b7da52935dec033304b723de42ff4505f7d34f/deadsnakes-py3.11-focal"
+    # Build string that's present in the deb file names. (Just used to make the
+    # names below easier to read.)
+    build_version="3.11.13-15-g8adac492d4-1+focal1"
+    # These must be kept topologically sorted, dependant packages last, as they
+    # will be installed one at a time.
+    #
+    # The only packages we actually want are `python3.11{,-dev,-venv}`
+    # but we need to include all of their dependencies first.
+    vendored_pkgs=(
+      "libpython3.11-minimal_${build_version}_amd64.deb"
+      "python3.11-lib2to3_${build_version}_all.deb"
+      "python3.11-minimal_${build_version}_amd64.deb"
+      "python3.11-distutils_${build_version}_all.deb"
+      "libpython3.11-stdlib_${build_version}_amd64.deb"
+      "python3.11_${build_version}_amd64.deb"
+      "libpython3.11_${build_version}_amd64.deb"
+      "libpython3.11-dev_${build_version}_amd64.deb"
+      "python3.11-dev_${build_version}_amd64.deb"
+      # `python3.11-venv` was not one of the packages installed in EC2
+      "python3.11-venv_${build_version}_amd64.deb"
+    )
+    mkdir /tmp/vendored_python
+    for pkg in "${vendored_pkgs[@]}"; do
+        debfile="/tmp/vendored_python/$pkg"
+        curl -fLsS -o "$debfile" "$url_base/$pkg"
+        dpkg -i "$debfile"
+    done
+    rm -rf /tmp/vendored_python
+EOCMD
+
+# Things that can only be installed after the vendored Python 3.11 installation above.
+RUN apt-get -y install --no-install-recommends python3-pip
+# End of vendored Python 3.11 section.
 
 RUN mkdir -p /edx/var/edxapp
 RUN mkdir -p /edx/etc
