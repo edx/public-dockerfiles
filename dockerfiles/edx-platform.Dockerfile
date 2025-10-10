@@ -6,7 +6,7 @@
 
 # This can be overridden with a private fork but you'll need to pass
 # --secret id=GIT_AUTH_TOKEN,env=GITHUB_TOKEN with a GH token in the env.
-ARG EDX_PLATFORM_REPO=openedx/edx-platform
+ARG EDX_PLATFORM_REPO=edx/edx-platform
 
 # These should be overridden with a full commit hash in order to get repeatable,
 # consistent builds.
@@ -18,7 +18,7 @@ ARG EDX_PLATFORM_REPO=openedx/edx-platform
 # need to be converted to ADD commands if you want to be able to pass a branch
 # to this arg and have it work consistently. (The main blocker is places where
 # we want to fetch a single file, because ADD can only fetch entire directories.)
-ARG EDX_PLATFORM_VERSION=master
+ARG EDX_PLATFORM_VERSION=release-ulmo
 ARG OPENEDX_TRANSLATIONS_VERSION=main
 
 
