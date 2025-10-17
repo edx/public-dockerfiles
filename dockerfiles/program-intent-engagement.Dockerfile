@@ -1,4 +1,4 @@
-FROM ubuntu:focal AS base
+FROM ubuntu:jammy AS base
 
 ARG PYTHON_VERSION=3.12
 ENV TZ=UTC
