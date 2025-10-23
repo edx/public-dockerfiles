@@ -1,4 +1,4 @@
-FROM ubuntu:focal AS base
+FROM ubuntu:jammy AS base
 
 # System requirements.
 
