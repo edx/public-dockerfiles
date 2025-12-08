@@ -93,8 +93,8 @@ WORKDIR /edx/app/enterprise-access
 
 RUN mkdir -p requirements
 
-RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/pip.txt
-RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-access/main/requirements/production.txt
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/enterprise-access/main/requirements/pip.txt
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/enterprise-access/main/requirements/production.txt
 # Dependencies are installed as root so they cannot be modified by the application user.
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/production.txt
@@ -102,7 +102,7 @@ RUN pip install -r requirements/production.txt
 RUN mkdir -p /edx/var/log
 
 # Clone the source code
-RUN curl -L https://github.com/openedx/enterprise-access/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+RUN curl -L https://github.com/edx/enterprise-access/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
 
 # Change user to app
 USER app
