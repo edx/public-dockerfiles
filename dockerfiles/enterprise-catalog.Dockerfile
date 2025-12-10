@@ -70,11 +70,11 @@ RUN useradd -m --shell /bin/false app
 WORKDIR /edx/app/enterprise-catalog
 RUN mkdir -p requirements
 
-RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-catalog/master/requirements/production.txt
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/enterprise-catalog/master/requirements/production.txt
 RUN pip install -r requirements/production.txt
 
 # Cloning the repository
-RUN curl -L https://github.com/openedx/enterprise-catalog/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+RUN curl -L https://github.com/edx/enterprise-catalog/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
