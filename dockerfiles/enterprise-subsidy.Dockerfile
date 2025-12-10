@@ -82,8 +82,8 @@ RUN mkdir -p requirements
 
 # Dependencies are installed as root so they cannot be modified by the application user.
 
-RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/enterprise-subsidy/main/requirements/pip.txt
-RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/enterprise-subsidy/main/requirements/production.txt
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/enterprise-subsidy/main/requirements/pip.txt
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/enterprise-subsidy/main/requirements/production.txt
 
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/production.txt
@@ -91,7 +91,7 @@ RUN pip install -r requirements/production.txt
 RUN mkdir -p /edx/var/log
 
 # cloning git repo
-RUN curl -L https://github.com/openedx/enterprise-subsidy/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+RUN curl -L https://github.com/edx/enterprise-subsidy/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
