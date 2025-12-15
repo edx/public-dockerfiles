@@ -20,6 +20,7 @@ ARG EDX_PLATFORM_REPO=openedx/edx-platform
 # we want to fetch a single file, because ADD can only fetch entire directories.)
 ARG EDX_PLATFORM_VERSION=master
 ARG OPENEDX_TRANSLATIONS_VERSION=main
+ARG OPENEDX_TRANSLATIONS_REPO=edx/openedx-translations
 
 
 FROM ubuntu:focal AS minimal-system
@@ -285,6 +286,7 @@ RUN pip install -e .
 FROM app-deps AS translations
 
 ARG OPENEDX_TRANSLATIONS_VERSION
+ARG OPENEDX_TRANSLATIONS_REPO
 
 # Install translations files. Note that this leaves the git working directory in
 # a "dirty" state.
@@ -296,7 +298,7 @@ RUN <<EOF
     export LMS_CFG=lms/envs/minimal.yml
     export CMS_CFG=lms/envs/minimal.yml
 
-    export ATLAS_OPTIONS="--revision=$OPENEDX_TRANSLATIONS_VERSION"
+    export ATLAS_OPTIONS="--revision=$OPENEDX_TRANSLATIONS_VERSION --repository=$OPENEDX_TRANSLATIONS_REPO"
     make pull_translations
 EOF
 
