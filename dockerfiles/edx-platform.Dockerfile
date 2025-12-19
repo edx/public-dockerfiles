@@ -22,7 +22,6 @@ ARG EDX_PLATFORM_VERSION=master
 ARG OPENEDX_TRANSLATIONS_VERSION=main
 ARG OPENEDX_TRANSLATIONS_REPO=edx/openedx-translations
 
-
 FROM ubuntu:focal AS minimal-system
 
 ARG SERVICE_VARIANT
@@ -118,13 +117,17 @@ RUN <<EOCMD
       libexpat1 libexpat1-dev mime-support tzdata libreadline8 libsqlite3-0
 EOCMD
 
+# This is a variable passed in via BuildKit that represents the architecture
+# The docker image is being built on.
+ARG BUILDARCH
+
 RUN <<EOCMD
 #!/usr/bin/env bash
     set -eu -o pipefail
     # Base URL for deb packages. For repeatability, we hardcode a
     # commit. (Normally this would be done using a build arg, but this is
     # intended as a quick hack.)
-    url_base="https://raw.githubusercontent.com/edx/vendored/c4b7da52935dec033304b723de42ff4505f7d34f/deadsnakes-py3.11-focal"
+    url_base="https://raw.githubusercontent.com/edx/vendored/35b1ada7111d308f6b2c9413fc4e64f2a129f708/deadsnakes-py3.11-focal"
     # Build string that's present in the deb file names. (Just used to make the
     # names below easier to read.)
     build_version="3.11.13-15-g8adac492d4-1+focal1"
@@ -134,17 +137,17 @@ RUN <<EOCMD
     # The only packages we actually want are `python3.11{,-dev,-venv}`
     # but we need to include all of their dependencies first.
     vendored_pkgs=(
-      "libpython3.11-minimal_${build_version}_amd64.deb"
+      "libpython3.11-minimal_${build_version}_${BUILDARCH}.deb"
       "python3.11-lib2to3_${build_version}_all.deb"
-      "python3.11-minimal_${build_version}_amd64.deb"
+      "python3.11-minimal_${build_version}_${BUILDARCH}.deb"
       "python3.11-distutils_${build_version}_all.deb"
-      "libpython3.11-stdlib_${build_version}_amd64.deb"
-      "python3.11_${build_version}_amd64.deb"
-      "libpython3.11_${build_version}_amd64.deb"
-      "libpython3.11-dev_${build_version}_amd64.deb"
-      "python3.11-dev_${build_version}_amd64.deb"
+      "libpython3.11-stdlib_${build_version}_${BUILDARCH}.deb"
+      "python3.11_${build_version}_${BUILDARCH}.deb"
+      "libpython3.11_${build_version}_${BUILDARCH}.deb"
+      "libpython3.11-dev_${build_version}_${BUILDARCH}.deb"
+      "python3.11-dev_${build_version}_${BUILDARCH}.deb"
       # `python3.11-venv` was not one of the packages installed in EC2
-      "python3.11-venv_${build_version}_amd64.deb"
+      "python3.11-venv_${build_version}_${BUILDARCH}.deb"
     )
     mkdir /tmp/vendored_python
     for pkg in "${vendored_pkgs[@]}"; do
@@ -198,7 +201,7 @@ RUN --mount=type=secret,id=GIT_AUTH_TOKEN \
     # when there's no token available. Doesn't seem to be a problem, though.
     gh_auth="$(cat /run/secrets/GIT_AUTH_TOKEN || true)@" && \
     mkdir -p requirements/edx && \
-    curl -fLsS -o requirements/pip.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/pip.txt && \
+    curl -fLsS -o requirements/pip.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/pip-tools.txt && \
     curl -fLsS -o requirements/edx/base.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/base.txt && \
     curl -fLsS -o requirements/edx/assets.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/assets.txt
 
