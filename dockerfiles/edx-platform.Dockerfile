@@ -22,8 +22,6 @@ ARG EDX_PLATFORM_VERSION=master
 ARG OPENEDX_TRANSLATIONS_VERSION=main
 ARG OPENEDX_TRANSLATIONS_REPO=edx/openedx-translations
 
-ARG TARGETARCH
-
 FROM ubuntu:focal AS minimal-system
 
 ARG SERVICE_VARIANT
@@ -119,6 +117,8 @@ RUN <<EOCMD
       libexpat1 libexpat1-dev mime-support tzdata libreadline8 libsqlite3-0
 EOCMD
 
+# This is a variable passed in via BuildKit that represents the architecture
+# The docker image is being built on.
 ARG BUILDARCH
 
 RUN <<EOCMD
@@ -201,7 +201,7 @@ RUN --mount=type=secret,id=GIT_AUTH_TOKEN \
     # when there's no token available. Doesn't seem to be a problem, though.
     gh_auth="$(cat /run/secrets/GIT_AUTH_TOKEN || true)@" && \
     mkdir -p requirements/edx && \
-    curl -fLsS -o requirements/pip.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/pip.txt && \
+    curl -fLsS -o requirements/pip.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/pip-tools.txt && \
     curl -fLsS -o requirements/edx/base.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/base.txt && \
     curl -fLsS -o requirements/edx/assets.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/assets.txt
 
