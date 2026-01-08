@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1
+
 # Source version args are declared before the first build stage and then
 # re-declared just before their point-of-use in each stage that needs them (if
 # it doesn't already inherit them from another stage). This is to optimize
@@ -118,8 +120,8 @@ RUN <<EOCMD
 EOCMD
 
 # This is a variable passed in via BuildKit that represents the architecture
-# The docker image is being built on.
-ARG BUILDARCH
+# the docker image is being built for.
+ARG TARGETARCH
 
 RUN <<EOCMD
 #!/usr/bin/env bash
@@ -137,17 +139,17 @@ RUN <<EOCMD
     # The only packages we actually want are `python3.11{,-dev,-venv}`
     # but we need to include all of their dependencies first.
     vendored_pkgs=(
-      "libpython3.11-minimal_${build_version}_${BUILDARCH}.deb"
+      "libpython3.11-minimal_${build_version}_${TARGETARCH}.deb"
       "python3.11-lib2to3_${build_version}_all.deb"
-      "python3.11-minimal_${build_version}_${BUILDARCH}.deb"
+      "python3.11-minimal_${build_version}_${TARGETARCH}.deb"
       "python3.11-distutils_${build_version}_all.deb"
-      "libpython3.11-stdlib_${build_version}_${BUILDARCH}.deb"
-      "python3.11_${build_version}_${BUILDARCH}.deb"
-      "libpython3.11_${build_version}_${BUILDARCH}.deb"
-      "libpython3.11-dev_${build_version}_${BUILDARCH}.deb"
-      "python3.11-dev_${build_version}_${BUILDARCH}.deb"
+      "libpython3.11-stdlib_${build_version}_${TARGETARCH}.deb"
+      "python3.11_${build_version}_${TARGETARCH}.deb"
+      "libpython3.11_${build_version}_${TARGETARCH}.deb"
+      "libpython3.11-dev_${build_version}_${TARGETARCH}.deb"
+      "python3.11-dev_${build_version}_${TARGETARCH}.deb"
       # `python3.11-venv` was not one of the packages installed in EC2
-      "python3.11-venv_${build_version}_${BUILDARCH}.deb"
+      "python3.11-venv_${build_version}_${TARGETARCH}.deb"
     )
     mkdir /tmp/vendored_python
     for pkg in "${vendored_pkgs[@]}"; do
