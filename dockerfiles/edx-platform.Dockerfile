@@ -70,8 +70,9 @@ RUN echo "locales locales/locales_to_be_generated multiselect en_US.UTF-8 UTF-8"
 # which is EOL; deadsnakes no longer has these packages. See BOMS-239 and
 # BOMS-238.
 RUN apt-get update && \
-  apt-get install -y software-properties-common && \
-  apt-add-repository -y ppa:deadsnakes/ppa
+  apt-get install -y software-properties-common
+  # Remember to add "&& \" to above line when restoring this:
+  #apt-add-repository -y ppa:deadsnakes/ppa
 
 # Install requirements needed for runtime and for some build steps.
 RUN apt-get update && \
