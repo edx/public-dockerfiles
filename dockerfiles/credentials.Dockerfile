@@ -3,12 +3,14 @@
 # SecretsUsedInArgOrEnv check gets false positives on the name CREDENTIALS
 FROM ubuntu:jammy AS base
 
+ARG OPENEDX_TRANSLATIONS_REPO
 ARG CREDENTIALS_SERVICE_REPO=openedx/credentials
 ARG CREDENTIALS_SERVICE_VERSION=master
 ARG PYTHON_VERSION=3.12
 ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
+ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
 # software-properties-common is needed to setup our Python 3.12 env
 RUN apt-get update && \
@@ -108,12 +110,15 @@ RUN mkdir -p /edx/var/log
 # Cloning git repo. This line is after the python requirements so that changes to the code will not bust the image cache
 ADD https://github.com/${CREDENTIALS_SERVICE_REPO}.git#${CREDENTIALS_SERVICE_VERSION} /edx/app/credentials/credentials
 
+# Fetch the translations into the image once the Makefile is in place
+RUN make pull_translations
+
 # Install frontend dependencies in node_modules directory
 RUN npm install --no-save
 ENV NODE_BIN=/edx/app/credentials/credentials/node_modules
 ENV PATH="$NODE_BIN/.bin:$PATH"
-# Run webpack
-RUN webpack --config webpack.config.js
+# make static, which also runs webpack
+RUN make static
 
 # Change static folder owner to application user.
 RUN chown -R app:app /edx/app/credentials/credentials/credentials/static
@@ -128,9 +133,12 @@ CMD gunicorn --workers=2 --name credentials -c /edx/app/credentials/credentials/
 FROM base AS dev
 USER root
 
+ARG OPENEDX_TRANSLATIONS_REPO
+
 RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/${CREDENTIALS_SERVICE_VERSION}/py_configuration_files/credentials.py
 
 ENV DJANGO_SETTINGS_MODULE=credentials.settings.devstack
+ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 RUN pip install -r /edx/app/credentials/credentials/requirements/dev.txt
 RUN make pull_translations
 
