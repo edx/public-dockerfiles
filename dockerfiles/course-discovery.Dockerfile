@@ -76,7 +76,10 @@ EXPOSE 8381
 
 FROM app AS prod
 
-ENV DJANGO_SETTINGS_MODULE "course_discovery.settings.production"
+ARG OPENEDX_TRANSLATIONS_REPO
+
+ENV DJANGO_SETTINGS_MODULE="course_discovery.settings.production"
+ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
 RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/production.txt
 
@@ -86,9 +89,12 @@ CMD gunicorn --bind=0.0.0.0:8381 --workers 2 --max-requests=1000 -c course_disco
 
 FROM app AS dev
 
+ARG OPENEDX_TRANSLATIONS_REPO
+
 RUN curl -L -o ${DISCOVERY_CODE_DIR}/course_discovery/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/course_discovery.py
 
-ENV DJANGO_SETTINGS_MODULE "course_discovery.settings.devstack"
+ENV DJANGO_SETTINGS_MODULE="course_discovery.settings.devstack"
+ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
 RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/django.txt
 RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/local.txt
