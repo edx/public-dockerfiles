@@ -4,7 +4,7 @@
 FROM ubuntu:jammy AS base
 
 ARG OPENEDX_TRANSLATIONS_REPO
-ARG CREDENTIALS_SERVICE_REPO=openedx/credentials
+ARG CREDENTIALS_SERVICE_REPO=edx/credentials
 ARG CREDENTIALS_SERVICE_VERSION=master
 ARG PYTHON_VERSION=3.12
 ENV TZ=UTC
@@ -98,8 +98,8 @@ WORKDIR /edx/app/credentials/credentials
 
 # fetching the requirement files that are needed
 RUN mkdir -p requirements
-RUN curl -L -o requirements/pip_tools.txt https://raw.githubusercontent.com/openedx/credentials/${CREDENTIALS_SERVICE_VERSION}/requirements/pip_tools.txt
-RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/openedx/credentials/${CREDENTIALS_SERVICE_VERSION}/requirements/production.txt
+RUN curl -L -o requirements/pip_tools.txt https://raw.githubusercontent.com/edx/credentials/${CREDENTIALS_SERVICE_VERSION}/requirements/pip_tools.txt
+RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/credentials/${CREDENTIALS_SERVICE_VERSION}/requirements/production.txt
 
 # Dependencies are installed as root so they cannot be modified by the application user.
 RUN pip install -r requirements/pip_tools.txt
