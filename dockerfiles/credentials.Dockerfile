@@ -4,6 +4,7 @@
 FROM ubuntu:jammy AS base
 
 ARG OPENEDX_TRANSLATIONS_REPO
+ARG OPENEDX_ATLAS_EXTRA_SOURCES
 ARG CREDENTIALS_SERVICE_REPO=edx/credentials
 ARG CREDENTIALS_SERVICE_VERSION=master
 ARG PYTHON_VERSION=3.12
@@ -11,6 +12,7 @@ ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
+ENV ATLAS_EXTRA_SOURCES="--repository=$OPENEDX_ATLAS_EXTRA_SOURCES"
 
 # software-properties-common is needed to setup our Python 3.12 env
 RUN apt-get update && \
@@ -133,7 +135,10 @@ CMD gunicorn --workers=2 --name credentials -c /edx/app/credentials/credentials/
 FROM base AS dev
 USER root
 
+ARG OPENEDX_ATLAS_EXTRA_SOURCES
 ARG OPENEDX_TRANSLATIONS_REPO
+ENV ATLAS_EXTRA_SOURCES="--repository=$OPENEDX_ATLAS_EXTRA_SOURCES"
+
 
 RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/${CREDENTIALS_SERVICE_VERSION}/py_configuration_files/credentials.py
 
