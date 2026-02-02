@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 # Source version args are declared before the first build stage and then
 # re-declared just before their point-of-use in each stage that needs them (if
 # it doesn't already inherit them from another stage). This is to optimize
