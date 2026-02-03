@@ -289,6 +289,7 @@ RUN pip install -e .
 # out the stage allows us to shed all of the unwanted out-of-repo changes.
 FROM app-deps AS translations
 
+ARG OPENEDX_ATLAS_EXTRA_SOURCES
 ARG OPENEDX_TRANSLATIONS_VERSION
 ARG OPENEDX_TRANSLATIONS_REPO
 
@@ -302,6 +303,7 @@ RUN <<EOF
     export LMS_CFG=lms/envs/minimal.yml
     export CMS_CFG=lms/envs/minimal.yml
 
+    export ATLAS_EXTRA_SOURCES="--repository=$OPENEDX_ATLAS_EXTRA_SOURCES"
     export ATLAS_OPTIONS="--revision=$OPENEDX_TRANSLATIONS_VERSION --repository=$OPENEDX_TRANSLATIONS_REPO"
     make pull_translations
 EOF
