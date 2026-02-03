@@ -303,7 +303,7 @@ RUN <<EOF
     export LMS_CFG=lms/envs/minimal.yml
     export CMS_CFG=lms/envs/minimal.yml
 
-    export ATLAS_EXTRA_SOURCES="--repository=$OPENEDX_ATLAS_EXTRA_SOURCES"
+    export ATLAS_EXTRA_SOURCES="$OPENEDX_ATLAS_EXTRA_SOURCES"
     export ATLAS_OPTIONS="--revision=$OPENEDX_TRANSLATIONS_VERSION --repository=$OPENEDX_TRANSLATIONS_REPO"
     make pull_translations
 EOF
