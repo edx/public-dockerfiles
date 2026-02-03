@@ -12,7 +12,7 @@ ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
 ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
-ENV ATLAS_EXTRA_SOURCES="--repository=$OPENEDX_ATLAS_EXTRA_SOURCES"
+ENV ATLAS_EXTRA_SOURCES="$OPENEDX_ATLAS_EXTRA_SOURCES"
 
 # software-properties-common is needed to setup our Python 3.12 env
 RUN apt-get update && \
@@ -137,7 +137,7 @@ USER root
 
 ARG OPENEDX_ATLAS_EXTRA_SOURCES
 ARG OPENEDX_TRANSLATIONS_REPO
-ENV ATLAS_EXTRA_SOURCES="--repository=$OPENEDX_ATLAS_EXTRA_SOURCES"
+ENV ATLAS_EXTRA_SOURCES="$OPENEDX_ATLAS_EXTRA_SOURCES"
 
 
 RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/${CREDENTIALS_SERVICE_VERSION}/py_configuration_files/credentials.py
