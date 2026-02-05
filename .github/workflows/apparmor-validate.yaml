@@ -13,7 +13,7 @@ jobs:
       matrix:
         profile:
           - filename: openedx_codejail_service.profile
-            os: ubuntu-24.04  # apparmor 4
+            os: ubuntu-latest  # apparmor 4
     runs-on: "${{ matrix.profile.os }}"
     steps:
 
