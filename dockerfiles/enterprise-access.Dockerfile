@@ -115,7 +115,7 @@ RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
 USER app
 
 # Configure git safe.directory as the app user
-RUN git config --global --add safe.directory /edx/app/enterprise-access/enterprise-access
+RUN git config --global --add safe.directory /edx/app/enterprise-access
 
 # Use entrypoint to handle runtime UID changes in Kubernetes
 ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
@@ -127,7 +127,7 @@ FROM app AS devstack
 USER root
 
 # Configure git safe.directory as root in devstack
-RUN git config --global --add safe.directory /edx/app/enterprise-access/enterprise-access
+RUN git config --global --add safe.directory /edx/app/enterprise-access
 
 RUN pip install -r requirements/dev.txt
 

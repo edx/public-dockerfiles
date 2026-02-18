@@ -88,7 +88,7 @@ RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
 USER app
 
 # Configure git safe.directory as the app user
-RUN git config --global --add safe.directory /edx/app/enterprise-catalog/enterprise-catalog
+RUN git config --global --add safe.directory /edx/app/enterprise-catalog
 
 # Use entrypoint to handle runtime UID changes in Kubernetes
 ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
@@ -108,7 +108,8 @@ EXPOSE 18161
 USER root
 
 # Configure git safe.directory as root in devstack
-RUN git config --global --add safe.directory /edx/app/enterprise-catalog/enterprise-catalog
+RUN git config --global --add safe.directory /edx/app/enterprise-catalog
 
 RUN pip install -r requirements/dev.txt
+USER app
 CMD gunicorn --workers=2 --name enterprise_catalog -c /edx/app/enterprise-catalog/enterprise_catalog/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_catalog.wsgi:application

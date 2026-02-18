@@ -16,17 +16,18 @@ if command -v git >/dev/null 2>&1; then
         "/edx/app/xqueue/xqueue"
         "/edx/app/credentials/credentials"
         "/edx/app/enterprise-subsidy"
-        "/edx/app/enterprise-catalog/enterprise-catalog"
-        "/edx/app/enterprise-access/enterprise-access"
+        "/edx/app/enterprise-catalog"
+        "/edx/app/enterprise-access"
         "/edx/app/commerce-coordinator"
         "/edx/app/edx-exams"
-        "/edx/app/notes"
+        "/edx/app/edx-notes-api"
         "/edx/app/analytics_dashboard/analytics_dashboard"
         "/edx/app/analytics_api/analytics_api"
         "/edx/app/license_manager"
-        "/edx/app/designer"
+        "/edx/app/portal-designer"
         "/edx/app/program-intent-engagement"
         "/edx/app/registrar"
+        "/app"
     )
     
     # Add each directory as safe if it exists
