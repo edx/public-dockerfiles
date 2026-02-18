@@ -54,6 +54,13 @@ RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${XQUEUE_VENV_DIR}
 # Create placeholder file for devstack provisioning, if needed
 RUN touch ${XQUEUE_APP_DIR}/xqueue_env
 
+# Create xqueue user for running the app
+RUN useradd -m --shell /bin/false xqueue
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 # Expose ports.
 EXPOSE 8040
 
@@ -66,10 +73,19 @@ RUN pip install -r ${XQUEUE_CODE_DIR}/requirements/dev.txt
 # cloning git repo
 RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
+# Ensure the repository is owned by the xqueue user
+RUN chown -R xqueue:xqueue ${XQUEUE_CODE_DIR}
+
 RUN curl -L -o ${XQUEUE_CODE_DIR}/xqueue/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/xqueue.py
 
 ENV DJANGO_SETTINGS_MODULE xqueue.devstack
 
+USER xqueue
+# Configure git safe.directory as the xqueue user
+RUN git config --global --add safe.directory ${XQUEUE_CODE_DIR}
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD while true; do python ./manage.py runserver 0.0.0.0:8040; sleep 2; done
 
 FROM app AS production
@@ -81,8 +97,17 @@ RUN pip install -r ${XQUEUE_APP_DIR}/requirements.txt
 # cloning git repo
 RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
+# Ensure the repository is owned by the xqueue user
+RUN chown -R xqueue:xqueue ${XQUEUE_CODE_DIR}
+
 ENV DJANGO_SETTINGS_MODULE=xqueue.production
 
+USER xqueue
+# Configure git safe.directory as the xqueue user
+RUN git config --global --add safe.directory ${XQUEUE_CODE_DIR}
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD gunicorn \
     --pythonpath=/edx/app/xqueue/xqueue \
     --timeout=300 \

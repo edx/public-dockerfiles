@@ -46,6 +46,13 @@ RUN nodeenv ${ECOMMERCE_NODEENV_DIR} --node=16.14.0 --prebuilt && npm install -g
 # Set working directory to the root of the repo
 WORKDIR ${ECOMMERCE_CODE_DIR}
 
+# Create ecommerce user for running the app
+RUN useradd -m --shell /bin/false ecommerce
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 # Install JS requirements
 RUN curl -L -o package.json https://raw.githubusercontent.com/edx/ecommerce/2u/main/package.json
 RUN curl -L -o package-lock.json.txt https://raw.githubusercontent.com/edx/ecommerce/2u/main/package-lock.json
@@ -69,6 +76,15 @@ RUN pip install -r ${ECOMMERCE_CODE_DIR}/requirements/production.txt
 # every time any bit of code is changed.
 RUN curl -L https://github.com/edx/ecommerce/archive/refs/heads/2u/main.tar.gz | tar -xz --strip-components=1
 
+# Ensure the repository is owned by the ecommerce user
+RUN chown -R ecommerce:ecommerce ${ECOMMERCE_CODE_DIR}
+
+USER ecommerce
+# Configure git safe.directory as the ecommerce user
+RUN git config --global --add safe.directory ${ECOMMERCE_CODE_DIR}
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD gunicorn --bind=0.0.0.0:18130 --workers 2 --max-requests=1000 -c ecommerce/docker_gunicorn_configuration.py ecommerce.wsgi:application
 
 FROM app AS dev
@@ -88,6 +104,15 @@ RUN touch ${ECOMMERCE_APP_DIR}/ecommerce_env
 # every time any bit of code is changed.
 RUN curl -L https://github.com/openedx/ecommerce/archive/refs/heads/2u/main.tar.gz | tar -xz --strip-components=1
 
+# Ensure the repository is owned by the ecommerce user
+RUN chown -R ecommerce:ecommerce ${ECOMMERCE_CODE_DIR}
+
 RUN curl -L -o ${ECOMMERCE_CODE_DIR}/ecommerce/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/ecommerce.py
 
+USER ecommerce
+# Configure git safe.directory as the ecommerce user
+RUN git config --global --add safe.directory ${ECOMMERCE_CODE_DIR}
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD while true; do python ./manage.py runserver 0.0.0.0:18130; sleep 2; done
