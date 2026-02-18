@@ -317,14 +317,24 @@ FROM app-deps AS base
 # static directories throughout the file tree.
 COPY --from=translations /edx/app/edxapp/edx-platform /edx/app/edxapp/edx-platform
 
-# Setting edx-platform directory as safe for git commands
-RUN git config --global --add safe.directory /edx/app/edxapp/edx-platform
+# Ensure the repository is owned by the app user
+RUN chown -R app:app /edx/app/edxapp/edx-platform
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
 
 
 # Production target, for use in all deployed environments (stage, prod, edge).
 FROM base AS production
 
 USER app
+
+# Setting edx-platform directory as safe for git commands (as app user)
+RUN git config --global --add safe.directory /edx/app/edxapp/edx-platform
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 
 ENV EDX_PLATFORM_SETTINGS='docker-production'
 ENV SERVICE_VARIANT="${SERVICE_VARIANT}"
@@ -335,6 +345,14 @@ EXPOSE ${SERVICE_PORT}
 
 # Development target, e.g. for use in devstack.
 FROM base AS development
+
+# Setting edx-platform directory as safe for git commands (inherited from app user in base)
+USER app
+RUN git config --global --add safe.directory /edx/app/edxapp/edx-platform
+USER root
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \

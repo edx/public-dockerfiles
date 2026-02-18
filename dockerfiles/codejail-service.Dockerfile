@@ -131,6 +131,13 @@ RUN useradd --no-create-home --shell /bin/false --uid $APP_UID --gid $APP_GID $A
 # Cloning git repo
 ADD https://github.com/${CODEJAIL_SERVICE_REPO}.git#${CODEJAIL_SERVICE_VERSION} /app
 
+# Ensure the repository is owned by the app user
+RUN chown -R ${APP_USER}:${APP_USER} /app
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 WORKDIR /app
 
 RUN python${APP_PY_VER} -m venv /venv && \
@@ -183,6 +190,12 @@ RUN apt-get update && \
 RUN /venv/bin/pip-sync requirements/dev.txt
 RUN python${APP_PY_VER} -m compileall /venv /app
 
+# Dev mode may run as root or as app user, configure git for root
+RUN git config --global --add safe.directory /app
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
+
 
 ##### Production target #####
 
@@ -193,3 +206,9 @@ RUN python${APP_PY_VER} -m compileall /venv /app
 
 # Drop to unprivileged user for running service
 USER ${APP_USER}
+
+# Configure git safe.directory as the app user
+RUN git config --global --add safe.directory /app
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]

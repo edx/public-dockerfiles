@@ -69,6 +69,16 @@ WORKDIR ${DISCOVERY_CODE_DIR}
 # Cloning git repo
 RUN curl -L https://github.com/openedx/course-discovery/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
+# Create discovery user for running the app
+RUN useradd -m --shell /bin/false discovery
+
+# Ensure the repository is owned by the discovery user
+RUN chown -R discovery:discovery ${DISCOVERY_CODE_DIR}
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 RUN npm install --production && ./node_modules/.bin/bower install --allow-root --production && ./node_modules/.bin/webpack --config webpack.config.js --progress
 
 # Expose canonical Discovery port
@@ -85,6 +95,12 @@ RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/production.txt
 
 RUN DISCOVERY_CFG=minimal.yml OPENEDX_ATLAS_PULL=true make pull_translations
 
+USER discovery
+# Configure git safe.directory as the discovery user
+RUN git config --global --add safe.directory ${DISCOVERY_CODE_DIR}
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD gunicorn --bind=0.0.0.0:8381 --workers 2 --max-requests=1000 -c course_discovery/docker_gunicorn_configuration.py course_discovery.wsgi:application
 
 FROM app AS dev
@@ -104,6 +120,12 @@ RUN DISCOVERY_CFG=minimal.yml OPENEDX_ATLAS_PULL=true make pull_translations
 # Devstack related step for backwards compatibility
 RUN touch ${DISCOVERY_APP_DIR}/discovery_env
 
+USER discovery
+# Configure git safe.directory as the discovery user
+RUN git config --global --add safe.directory ${DISCOVERY_CODE_DIR}
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD while true; do python ./manage.py runserver 0.0.0.0:8381; sleep 2; done
 
 ###########################################################

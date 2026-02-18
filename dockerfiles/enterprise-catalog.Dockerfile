@@ -76,9 +76,22 @@ RUN pip install -r requirements/production.txt
 # Cloning the repository
 RUN curl -L https://github.com/edx/enterprise-catalog/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
+# Ensure the repository is owned by the app user
+RUN chown -R app:app /edx/app/enterprise-catalog
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
 USER app
+
+# Configure git safe.directory as the app user
+RUN git config --global --add safe.directory /edx/app/enterprise-catalog
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
 CMD gunicorn --workers=2 --name enterprise_catalog -c /edx/app/enterprise-catalog/enterprise_catalog/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_catalog.wsgi:application
@@ -93,5 +106,10 @@ FROM app AS legacy_devapp
 EXPOSE 18160
 EXPOSE 18161
 USER root
+
+# Configure git safe.directory as root in devstack
+RUN git config --global --add safe.directory /edx/app/enterprise-catalog
+
 RUN pip install -r requirements/dev.txt
+USER app
 CMD gunicorn --workers=2 --name enterprise_catalog -c /edx/app/enterprise-catalog/enterprise_catalog/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_catalog.wsgi:application

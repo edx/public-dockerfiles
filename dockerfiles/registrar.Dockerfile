@@ -57,6 +57,12 @@ ENV PATH="$REGISTRAR_VENV_DIR/bin:$PATH"
 ENV REGISTRAR_APP_DIR=${REGISTRAR_APP_DIR}
 ENV REGISTRAR_CODE_DIR=${REGISTRAR_CODE_DIR}
 
+# Expose ports.
+EXPOSE 18734
+EXPOSE 18735
+
+RUN useradd -m --shell /bin/false app
+
 # Working directory will be root of repo.
 WORKDIR ${REGISTRAR_CODE_DIR}
 
@@ -67,10 +73,6 @@ RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${REGISTRAR_VENV_DIR}
 RUN pip install --upgrade pip setuptools
 
 ENV REGISTRAR_CFG="${COMMON_CFG_DIR}/registrar.yml"
-
-# Expose ports.
-EXPOSE 18734
-EXPOSE 18735
 
 FROM app AS dev
 
@@ -84,8 +86,22 @@ RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | 
 
 RUN curl -L -o ${REGISTRAR_CODE_DIR}/registrar/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/registrar.py
 
+# Ensure the repository is owned by the app user
+RUN chown -R app:app /edx/app/registrar
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 ENV DJANGO_SETTINGS_MODULE registrar.settings.devstack
 
+USER app
+
+# Configure git safe.directory as the app user
+RUN git config --global --add safe.directory /edx/app/registrar
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD while true; do python ./manage.py runserver 0.0.0.0:18734; sleep 2; done
 
 FROM app AS prod
@@ -98,6 +114,20 @@ RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/requirements/production.
 # cloning the repository after requirements installation
 RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
+# Ensure the repository is owned by the app user
+RUN chown -R app:app /edx/app/registrar
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 ENV DJANGO_SETTINGS_MODULE=registrar.settings.production
 
+USER app
+
+# Configure git safe.directory as the app user
+RUN git config --global --add safe.directory /edx/app/registrar
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD ["gunicorn", "--workers=2", "--name", "registrar", "-c", "/edx/app/registrar/registrar/docker_gunicorn_configuration.py", "--max-requests=1000", "registrar.wsgi:application"]

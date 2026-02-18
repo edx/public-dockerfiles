@@ -71,10 +71,22 @@ RUN mkdir -p /edx/var/log
 # Clone the application code
 RUN curl -L https://github.com/edx/portal-designer/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
+# Ensure the repository is owned by the app user
+RUN chown -R app:app /edx/app/designer
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
 USER app
 
+# Configure git safe.directory as the app user
+RUN git config --global --add safe.directory /edx/app/designer
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
 CMD gunicorn --workers=2 --name designer -c /edx/app/designer/designer/docker_gunicorn_configuration.py --log-file - --max-requests=1000 designer.wsgi:application
 
@@ -82,5 +94,13 @@ CMD gunicorn --workers=2 --name designer -c /edx/app/designer/designer/docker_gu
 FROM app AS devstack
 # Install dependencies as root and revert back to application user
 USER root
+
+# Configure git safe.directory for root user in dev
+RUN git config --global --add safe.directory /edx/app/designer
+
 RUN pip install -r /edx/app/designer/requirements/dev.txt
 USER app
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
+CMD python ./manage.py runserver 0.0.0.0:18808

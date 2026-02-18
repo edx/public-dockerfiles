@@ -81,8 +81,20 @@ RUN pip install -r ${ANALYTICS_API_CODE_DIR}/requirements/production.txt
 
 RUN curl -L https://github.com/edx/edx-analytics-data-api/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
+# Ensure the repository is owned by the app user (when running with app user)
+RUN chown -R app:app ${ANALYTICS_API_CODE_DIR}
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 # exec /edx/app/analytics_api/venvs/analytics_api/bin/gunicorn -c /edx/app/analytics_api/analytics_api_gunicorn.py  analyticsdataserver.wsgi:application
 
+# Configure git safe.directory (needed for git operations at runtime)
+RUN git config --global --add safe.directory ${ANALYTICS_API_CODE_DIR}
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD ["gunicorn" , "-b", "0.0.0.0:8100", "--pythonpath", "/edx/app/analytics_api/analytics_api","analyticsdataserver.wsgi:application"]
 
 FROM base AS dev
@@ -98,9 +110,21 @@ RUN curl -L https://github.com/edx/edx-analytics-data-api/archive/refs/heads/mas
 
 RUN curl -L -o ${ANALYTICS_API_CODE_DIR}/analyticsdataserver/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/analytics_data_api.py
 
+# Ensure the repository is owned by the app user (when running with app user)
+RUN chown -R app:app ${ANALYTICS_API_CODE_DIR}
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 ENV DJANGO_SETTINGS_MODULE "analyticsdataserver.settings.devstack"
 
 # Devstack related step for backwards compatibility
 RUN touch /edx/app/${ANALYTICS_API_SERVICE_NAME}/${ANALYTICS_API_SERVICE_NAME}_env
 
+# Configure git safe.directory (needed for git operations at runtime)
+RUN git config --global --add safe.directory ${ANALYTICS_API_CODE_DIR}
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD while true; do python ./manage.py runserver 0.0.0.0:8110; sleep 2; done

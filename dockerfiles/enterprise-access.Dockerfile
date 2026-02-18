@@ -104,14 +104,31 @@ RUN mkdir -p /edx/var/log
 # Clone the source code
 RUN curl -L https://github.com/edx/enterprise-access/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
 
+# Ensure the repository is owned by the app user
+RUN chown -R app:app /edx/app/enterprise-access
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 # Change user to app
 USER app
+
+# Configure git safe.directory as the app user
+RUN git config --global --add safe.directory /edx/app/enterprise-access
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
 CMD gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/enterprise_access/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_access.wsgi:application
 
 FROM app AS devstack
 USER root
+
+# Configure git safe.directory as root in devstack
+RUN git config --global --add safe.directory /edx/app/enterprise-access
+
 RUN pip install -r requirements/dev.txt
 
 CMD gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/enterprise_access/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_access.wsgi:application
