@@ -112,6 +112,13 @@ RUN mkdir -p /edx/var/log
 # Cloning git repo. This line is after the python requirements so that changes to the code will not bust the image cache
 ADD https://github.com/${CREDENTIALS_SERVICE_REPO}.git#${CREDENTIALS_SERVICE_VERSION} /edx/app/credentials/credentials
 
+# Ensure the repository is owned by the app user
+RUN chown -R app:app /edx/app/credentials/credentials
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 # Fetch the translations into the image once the Makefile is in place
 RUN make pull_translations
 
@@ -128,6 +135,11 @@ RUN chown -R app:app /edx/app/credentials/credentials/credentials/static
 # Code is owned by root so it cannot be modified by the application user. So we copy it before changing users.
 USER app
 
+# Configure git safe.directory as the app user
+RUN git config --global --add safe.directory /edx/app/credentials/credentials
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
 CMD gunicorn --workers=2 --name credentials -c /edx/app/credentials/credentials/credentials/docker_gunicorn_configuration.py --log-file - --max-requests=1000 credentials.wsgi:application
 
@@ -150,4 +162,9 @@ RUN make pull_translations
 # Devstack related step for backwards compatibility, used in devstack's docker-compose.yml
 RUN touch ../credentials_env
 
+# Configure git safe.directory for root user in dev
+RUN git config --global --add safe.directory /edx/app/credentials/credentials
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD while true; do python ./manage.py runserver 0.0.0.0:18150; sleep 2; done

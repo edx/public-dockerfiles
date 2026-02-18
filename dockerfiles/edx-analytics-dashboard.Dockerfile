@@ -66,6 +66,13 @@ RUN pip install  --no-cache-dir -r requirements/production.txt
 
 RUN curl -L https://github.com/edx/edx-analytics-dashboard/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
+# Ensure the repository is owned by the app user (when running with app user)
+RUN chown -R app:app ${INSIGHTS_CODE_DIR}
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 RUN curl -L -o ${INSIGHTS_CODE_DIR}/analytics_dashboard/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/analytics_dashboard.py
 
 RUN nodeenv ${INSIGHTS_NODEENV_DIR} --node=18.20.2 --prebuilt \
@@ -85,12 +92,22 @@ ENV DJANGO_SETTINGS_MODULE="analytics_dashboard.settings.devstack"
 # Backwards compatibility with devstack
 RUN touch "${INSIGHTS_APP_DIR}/insights_env"
 
+# Configure git safe.directory (needed for git operations at runtime)
+RUN git config --global --add safe.directory ${INSIGHTS_CODE_DIR}
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD while true; do python ./manage.py runserver 0.0.0.0:8110; sleep 2; done
 
 FROM app AS prod
 
 ENV DJANGO_SETTINGS_MODULE="analytics_dashboard.settings.production"
 
+# Configure git safe.directory (needed for git operations at runtime)
+RUN git config --global --add safe.directory ${INSIGHTS_CODE_DIR}
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD gunicorn \
   --pythonpath=/edx/app/insights/edx_analytics_dashboard/analytics_dashboard \
   --timeout=300 \

@@ -97,18 +97,39 @@ RUN pip install --no-cache-dir -r requirements/production.txt
 RUN curl -L https://github.com/edx/license-manager/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 RUN curl -L -o license_manager/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/license_manager.py
 
+# Ensure the repository is owned by the app user
+RUN chown -R app:app /edx/app/license_manager
+
+# Copy the entrypoint script that configures git safe.directory at runtime
+COPY dockerfiles/git-safe-entrypoint.sh /usr/local/bin/git-safe-entrypoint.sh
+RUN chmod +x /usr/local/bin/git-safe-entrypoint.sh
+
 RUN mkdir -p /edx/var/log
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
 USER app
 
+# Configure git safe.directory as the app user
+RUN git config --global --add safe.directory /edx/app/license_manager
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 # Gunicorn 19 does not log to stdout or stderr by default. Once we are past gunicorn 19, the logging to STDOUT need not be specified.
 CMD gunicorn --workers=2 --name license_manager -c /edx/app/license_manager/license_manager/docker_gunicorn_configuration.py --log-file - --max-requests=1000 license_manager.wsgi:application
 
 FROM app as dev
 USER root
+
+# Configure git safe.directory for root user in dev
+RUN git config --global --add safe.directory /edx/app/license_manager
+
 RUN pip install -r /edx/app/license_manager/requirements/dev.txt
+
+USER app
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD gunicorn --reload --workers=2 --name license_manager -c /edx/app/license_manager/license_manager/docker_gunicorn_configuration.py --log-file - --max-requests=1000 license_manager.wsgi:application
 
 
@@ -117,5 +138,14 @@ FROM app as legacy_devapp
 EXPOSE 18170
 EXPOSE 18171
 USER root
+
+# Configure git safe.directory for root user in dev
+RUN git config --global --add safe.directory /edx/app/license_manager
+
 RUN pip install -r /edx/app/license_manager/requirements/dev.txt
+
+USER app
+
+# Use entrypoint to handle runtime UID changes in Kubernetes
+ENTRYPOINT ["/usr/local/bin/git-safe-entrypoint.sh"]
 CMD gunicorn --reload --workers=2 --name license_manager -c /edx/app/license_manager/license_manager/docker_gunicorn_configuration.py --log-file - --max-requests=1000 license_manager.wsgi:application
