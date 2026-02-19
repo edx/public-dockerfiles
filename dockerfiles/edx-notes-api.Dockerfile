@@ -79,6 +79,8 @@ RUN pip install --upgrade pip setuptools
 RUN curl -L -o requirements/base.txt https://raw.githubusercontent.com/openedx/edx-notes-api/master/requirements/base.txt
 RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/openedx/edx-notes-api/master/requirements/pip.txt
 
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install --no-cache-dir -r requirements/base.txt
 RUN pip install --no-cache-dir -r requirements/pip.txt
 

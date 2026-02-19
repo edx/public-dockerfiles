@@ -62,6 +62,8 @@ ENV DJANGO_SETTINGS_MODULE "ecommerce.settings.production"
 RUN mkdir requirements
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/ecommerce/2u/main/requirements/production.txt
 
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install -r ${ECOMMERCE_CODE_DIR}/requirements/production.txt
 
 # Copy over rest of code.
@@ -78,6 +80,8 @@ ENV DJANGO_SETTINGS_MODULE "ecommerce.settings.devstack"
 RUN mkdir requirements
 RUN curl -L -o requirements/dev.txt https://raw.githubusercontent.com/edx/ecommerce/2u/main/requirements/dev.txt
 
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install -r ${ECOMMERCE_CODE_DIR}/requirements/dev.txt
 
 # Devstack related step for backwards compatibility

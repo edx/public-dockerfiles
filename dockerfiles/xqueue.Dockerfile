@@ -61,6 +61,8 @@ FROM app AS dev
 
 RUN curl -L -o ${XQUEUE_CODE_DIR}/requirements/dev.txt https://raw.githubusercontent.com/openedx/xqueue/master/requirements/dev.txt
 # xqueue service config commands below
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install -r ${XQUEUE_CODE_DIR}/requirements/dev.txt
 
 # cloning git repo
@@ -76,6 +78,8 @@ FROM app AS production
 
 RUN curl -L -o ${XQUEUE_APP_DIR}/requirements.txt https://raw.githubusercontent.com/openedx/xqueue/master/requirements.txt
 # xqueue service config commands below
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install -r ${XQUEUE_APP_DIR}/requirements.txt
 
 # cloning git repo
