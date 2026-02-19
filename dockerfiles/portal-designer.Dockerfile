@@ -30,7 +30,6 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  python${PYTHON_VERSION} \
  python${PYTHON_VERSION}-dev
 
-RUN pip install --upgrade pip setuptools
 # delete apt package lists because we do not need them inflating our image
 RUN rm -rf /var/lib/apt/lists/*
 
