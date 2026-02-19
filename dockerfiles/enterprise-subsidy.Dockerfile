@@ -85,6 +85,8 @@ RUN mkdir -p requirements
 RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/enterprise-subsidy/main/requirements/pip.txt
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/enterprise-subsidy/main/requirements/production.txt
 
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/production.txt
 
@@ -102,6 +104,8 @@ CMD gunicorn --workers=2 --name enterprise-subsidy -c /edx/app/enterprise-subsid
 
 FROM app AS devstack
 USER root
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install -r requirements/dev.txt
 USER app
 CMD gunicorn --workers=2 --name enterprise-subsidy -c /edx/app/enterprise-subsidy/enterprise_subsidy/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_subsidy.wsgi:application

@@ -96,6 +96,8 @@ RUN mkdir -p requirements
 RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/enterprise-access/main/requirements/pip.txt
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/enterprise-access/main/requirements/production.txt
 # Dependencies are installed as root so they cannot be modified by the application user.
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/production.txt
 
@@ -112,6 +114,8 @@ CMD gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/
 
 FROM app AS devstack
 USER root
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install -r requirements/dev.txt
 
 CMD gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/enterprise_access/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_access.wsgi:application
