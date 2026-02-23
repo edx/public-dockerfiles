@@ -1,4 +1,4 @@
-FROM ubuntu:jammy AS app
+FROM ubuntu:focal AS app
 MAINTAINER sre@edx.org
 
 # ENV variables for Python 3.12 support
@@ -30,6 +30,7 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  python${PYTHON_VERSION} \
  python${PYTHON_VERSION}-dev
 
+RUN pip install --upgrade pip setuptools
 # delete apt package lists because we do not need them inflating our image
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -63,8 +64,6 @@ RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${DESIGNER_VENV_DIR}
 
 # Download and install application requirements
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/portal-designer/master/requirements/production.txt
-# Pin setuptools to avoid pkg_resources removal issue
-RUN pip install "setuptools<82.0.0"
 RUN pip install -r requirements/production.txt
 
 RUN mkdir -p /edx/var/log
@@ -83,7 +82,5 @@ CMD gunicorn --workers=2 --name designer -c /edx/app/designer/designer/docker_gu
 FROM app AS devstack
 # Install dependencies as root and revert back to application user
 USER root
-# Pin setuptools to avoid pkg_resources removal issue
-RUN pip install "setuptools<82.0.0"
 RUN pip install -r /edx/app/designer/requirements/dev.txt
 USER app

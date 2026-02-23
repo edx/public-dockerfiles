@@ -57,8 +57,6 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN pip install --upgrade pip setuptools
-
 # Remove package lists to reduce image size
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -98,6 +96,7 @@ RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx
 # Dependencies are installed as root so they cannot be modified by the application user.
 # Pin setuptools to avoid pkg_resources removal issue
 RUN pip install "setuptools<82.0.0"
+RUN pip install --upgrade pip setuptools
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/production.txt
 

@@ -1,4 +1,4 @@
-FROM ubuntu:jammy AS app
+FROM ubuntu:focal AS app
 LABEL org.opencontainers.image.authors="sre@edx.org"
 
 
@@ -84,8 +84,6 @@ RUN mkdir -p requirements
 # this prevents the image cache from busting unless the dependencies have changed.
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/edx-exams/main/requirements/production.txt
 
-# Pin setuptools to avoid pkg_resources removal issue
-RUN pip install "setuptools<82.0.0"
 # Dependencies are installed as root so they cannot be modified by the application user.
 RUN pip install -r requirements/production.txt
 
@@ -99,8 +97,6 @@ FROM app as devstack
 
 ENV DJANGO_SETTINGS_MODULE edx_exams.settings.devstack
 
-# Pin setuptools to avoid pkg_resources removal issue
-RUN pip install "setuptools<82.0.0"
 RUN pip install -r requirements/dev.txt
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:18740; sleep 2; done

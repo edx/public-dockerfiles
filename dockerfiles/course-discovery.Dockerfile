@@ -81,8 +81,6 @@ ARG OPENEDX_TRANSLATIONS_REPO
 ENV DJANGO_SETTINGS_MODULE="course_discovery.settings.production"
 ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
-# Pin setuptools to avoid pkg_resources removal issue
-RUN pip install "setuptools<82.0.0"
 RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/production.txt
 
 RUN DISCOVERY_CFG=minimal.yml OPENEDX_ATLAS_PULL=true make pull_translations
@@ -98,8 +96,6 @@ RUN curl -L -o ${DISCOVERY_CODE_DIR}/course_discovery/settings/devstack.py https
 ENV DJANGO_SETTINGS_MODULE="course_discovery.settings.devstack"
 ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
-# Pin setuptools to avoid pkg_resources removal issue
-RUN pip install "setuptools<82.0.0"
 RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/django.txt
 RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/local.txt
 

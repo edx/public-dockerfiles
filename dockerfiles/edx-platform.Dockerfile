@@ -207,8 +207,6 @@ RUN --mount=type=secret,id=GIT_AUTH_TOKEN \
     curl -fLsS -o requirements/edx/assets.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/assets.txt
 
 RUN pip install -r requirements/pip.txt
-# Pin setuptools to avoid pkg_resources removal issue
-RUN pip install "setuptools<82.0.0"
 RUN pip install -r requirements/edx/base.txt
 RUN pip install -r requirements/edx/assets.txt
 
@@ -243,8 +241,6 @@ RUN --mount=type=secret,id=GIT_AUTH_TOKEN \
     gh_auth="$(cat /run/secrets/GIT_AUTH_TOKEN || true)@" && \
     curl -fLsS -o requirements/edx/development.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/development.txt
 
-# Pin setuptools to avoid pkg_resources removal issue
-RUN pip install "setuptools<82.0.0"
 RUN pip install -r requirements/edx/development.txt
 
 
