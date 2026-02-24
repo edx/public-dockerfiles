@@ -51,22 +51,18 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  curl \
  libffi-dev \
  libsqlite3-dev \
- python3-pip \
  python${PYTHON_VERSION} \
- python${PYTHON_VERSION}-dev
+ python${PYTHON_VERSION}-dev \
+ python${PYTHON_VERSION}-venv
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # delete apt package lists because we do not need them inflating our image
 RUN rm -rf /var/lib/apt/lists/*
 
-# need to use virtualenv pypi package with Python 3.12
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
-RUN pip install virtualenv
-
 # Create a virtualenv for sanity
 ENV VIRTUAL_ENV=/edx/venvs/enterprise-subsidy
-RUN virtualenv -p python${PYTHON_VERSION} $VIRTUAL_ENV
+RUN python${PYTHON_VERSION} -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN locale-gen en_US.UTF-8

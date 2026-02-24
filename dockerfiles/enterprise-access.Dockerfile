@@ -51,22 +51,18 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  curl \
  libffi-dev \
  libsqlite3-dev \
- python3-pip \
  python${PYTHON_VERSION} \
- python${PYTHON_VERSION}-dev
+ python${PYTHON_VERSION}-dev \
+ python${PYTHON_VERSION}-venv
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Remove package lists to reduce image size
 RUN rm -rf /var/lib/apt/lists/*
 
-# Set up Python environment and install virtualenv
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
-RUN pip install virtualenv
-
 # Create a virtualenv for sanity
 ENV VIRTUAL_ENV=/edx/venvs/enterprise-access
-RUN virtualenv -p python${PYTHON_VERSION} $VIRTUAL_ENV
+RUN python${PYTHON_VERSION} -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 WORKDIR /tmp
@@ -96,7 +92,6 @@ RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx
 # Dependencies are installed as root so they cannot be modified by the application user.
 # Pin setuptools to avoid pkg_resources removal issue
 RUN pip install "setuptools<82.0.0"
-RUN pip install --upgrade pip setuptools
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/production.txt
 
