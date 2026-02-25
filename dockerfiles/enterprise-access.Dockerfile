@@ -13,8 +13,6 @@ MAINTAINER sre@edx.org
 
 # python; ubuntu doesnt ship with python, so this is the python we will use to run the application
 
-# python3-pip; install pip to install application requirements.txt files
-
 # pkg-config
 #     mysqlclient>=2.2.0 requires this (https://github.com/PyMySQL/mysqlclient/issues/620)
 
@@ -51,24 +49,18 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  curl \
  libffi-dev \
  libsqlite3-dev \
- python3-pip \
  python${PYTHON_VERSION} \
- python${PYTHON_VERSION}-dev
+ python${PYTHON_VERSION}-dev \
+ python${PYTHON_VERSION}-venv
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
-
-RUN pip install --upgrade pip setuptools
 
 # Remove package lists to reduce image size
 RUN rm -rf /var/lib/apt/lists/*
 
-# Set up Python environment and install virtualenv
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
-RUN pip install virtualenv
-
 # Create a virtualenv for sanity
 ENV VIRTUAL_ENV=/edx/venvs/enterprise-access
-RUN virtualenv -p python${PYTHON_VERSION} $VIRTUAL_ENV
+RUN python${PYTHON_VERSION} -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 WORKDIR /tmp
@@ -96,6 +88,8 @@ RUN mkdir -p requirements
 RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/enterprise-access/main/requirements/pip.txt
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/enterprise-access/main/requirements/production.txt
 # Dependencies are installed as root so they cannot be modified by the application user.
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/production.txt
 
@@ -112,6 +106,8 @@ CMD gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/
 
 FROM app AS devstack
 USER root
+# Pin setuptools to avoid pkg_resources removal issue
+RUN pip install "setuptools<82.0.0"
 RUN pip install -r requirements/dev.txt
 
 CMD gunicorn --workers=2 --name enterprise-access -c /edx/app/enterprise-access/enterprise_access/docker_gunicorn_configuration.py --log-file - --max-requests=1000 enterprise_access.wsgi:application
