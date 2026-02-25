@@ -13,8 +13,6 @@ MAINTAINER sre@edx.org
 
 # python; ubuntu doesnt ship with python, so this is the python we will use to run the application
 
-# python3-pip; install pip to install application requirements.txt files
-
 # pkg-config
 #     mysqlclient>=2.2.0 requires this (https://github.com/PyMySQL/mysqlclient/issues/620)
 
