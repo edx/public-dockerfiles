@@ -65,7 +65,8 @@ WORKDIR /edx/app/commerce-coordinator
 RUN mkdir -p requirements
 
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/commerce-coordinator/main/requirements/production.txt
-RUN pip install -r requirements/production.txt
+RUN curl -L -o requirements/constraints.txt https://raw.githubusercontent.com/edx/commerce-coordinator/main/requirements/constraints.txt
+RUN pip install -r requirements/production.txt -c requirements/constraints.txt
 
 RUN mkdir -p /edx/var/log
 
