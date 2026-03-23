@@ -48,7 +48,7 @@ ENV VIRTUAL_ENV=/venv
 RUN virtualenv -p python$PYTHON_VERSION $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-RUN pip install pip==24.0 setuptools==69.5.1
+RUN pip install pip==24.0 setuptools==81.0.0
 
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
@@ -65,8 +65,7 @@ WORKDIR /edx/app/commerce-coordinator
 RUN mkdir -p requirements
 
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/commerce-coordinator/main/requirements/production.txt
-RUN curl -L -o requirements/constraints.txt https://raw.githubusercontent.com/edx/commerce-coordinator/main/requirements/constraints.txt
-RUN pip install -r requirements/production.txt -c requirements/constraints.txt
+RUN pip install -r requirements/production.txt
 
 RUN mkdir -p /edx/var/log
 
