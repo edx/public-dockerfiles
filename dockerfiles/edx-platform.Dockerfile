@@ -268,6 +268,13 @@ RUN <<EOCMD
 from .production import *  # pylint: disable=wildcard-import, unused-wildcard-import
 from openedx.core.lib.logsettings import get_docker_logger_config
 LOGGING = get_docker_logger_config()
+TRACKING_LOG_DIR="/edx/var/log/tracking.log"
+LOGGING["handlers"]["tracking"] = {
+    'level': 'DEBUG',
+    'class': 'logging.handlers.WatchedFileHandler',
+    'filename': TRACKING_LOG_DIR,
+    'formatter': 'raw',
+}
 EOF
 
     cp lms/envs/docker-production.py cms/envs/docker-production.py
