@@ -268,10 +268,11 @@ RUN <<EOCMD
 from .production import *  # pylint: disable=wildcard-import, unused-wildcard-import
 from openedx.core.lib.logsettings import get_docker_logger_config
 LOGGING = get_docker_logger_config()
+tracking_log_path = os.path.join('/edx/var/log/tracking', os.environ.get('NODE_NAME', 'unknown-node'), os.environ.get('POD_NAME', 'unknown-pod'))
 LOGGING["handlers"]["tracking"] = {
     'level': 'DEBUG',
     'class': 'logging.handlers.WatchedFileHandler',
-    'filename': "/edx/var/log/tracking.log",
+    'filename': os.path.join(tracking_log_path, 'tracking.log'),
     'formatter': 'raw',
 }
 EOF
