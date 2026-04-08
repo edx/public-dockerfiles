@@ -166,6 +166,7 @@ RUN apt-get -y install --no-install-recommends python3-pip
 RUN mkdir -p /edx/var/edxapp
 RUN mkdir -p /edx/etc
 RUN chown app:app /edx/var/edxapp
+RUN mkdir -p /edx/var/log/tracking && chown -R app:app /edx/var/log
 
 
 # The builder-production stage is a temporary stage that installs required packages and builds the python virtualenv,
@@ -268,11 +269,16 @@ RUN <<EOCMD
 from .production import *  # pylint: disable=wildcard-import, unused-wildcard-import
 from openedx.core.lib.logsettings import get_docker_logger_config
 LOGGING = get_docker_logger_config()
-tracking_log_path = os.path.join('/edx/var/log/tracking', os.environ.get('NODE_NAME', 'unknown-node'), os.environ.get('POD_NAME', 'unknown-pod'))
+_tracking_log_dir = os.path.join(
+    '/edx/var/log/tracking',
+    os.environ.get('NODE_NAME', 'unknown-node'),
+    os.environ.get('POD_NAME', 'unknown-pod'),
+)
+os.makedirs(_tracking_log_dir, exist_ok=True)
 LOGGING["handlers"]["tracking"] = {
     'level': 'DEBUG',
     'class': 'logging.handlers.WatchedFileHandler',
-    'filename': os.path.join(tracking_log_path, 'tracking.log'),
+    'filename': os.path.join(_tracking_log_dir, 'tracking.log'),
     'formatter': 'raw',
 }
 EOF
