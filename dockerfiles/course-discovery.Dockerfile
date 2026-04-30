@@ -1,6 +1,8 @@
 FROM ubuntu:jammy AS app
 
 ARG PYTHON_VERSION=3.12
+ARG COURSE_DISCOVERY_REPO=edx/course-discovery
+ARG COURSE_DISCOVERY_REF=master
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV TZ=UTC
@@ -66,8 +68,7 @@ RUN nodeenv ${DISCOVERY_NODEENV_DIR} --node=16.14.0 --prebuilt && npm install -g
 # Working directory will be root of repo.
 WORKDIR ${DISCOVERY_CODE_DIR}
 
-# Cloning git repo
-RUN curl -L https://github.com/openedx/course-discovery/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+ADD https://github.com/${COURSE_DISCOVERY_REPO}.git#${COURSE_DISCOVERY_REF} ${DISCOVERY_CODE_DIR}
 
 RUN npm install --production && ./node_modules/.bin/bower install --allow-root --production && ./node_modules/.bin/webpack --config webpack.config.js --progress
 
