@@ -67,7 +67,7 @@ RUN nodeenv ${DISCOVERY_NODEENV_DIR} --node=16.14.0 --prebuilt && npm install -g
 WORKDIR ${DISCOVERY_CODE_DIR}
 
 # Cloning git repo
-RUN curl -L https://github.com/openedx/course-discovery/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+RUN curl -L https://github.com/edx/course-discovery/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 RUN npm install --production && ./node_modules/.bin/bower install --allow-root --production && ./node_modules/.bin/webpack --config webpack.config.js --progress
 
