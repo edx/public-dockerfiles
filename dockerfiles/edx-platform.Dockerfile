@@ -266,6 +266,7 @@ RUN <<EOCMD
     set -eu
 
     cat > lms/envs/docker-production.py <<'EOF'
+import platform
 from .production import *  # pylint: disable=wildcard-import, unused-wildcard-import
 from openedx.core.lib.logsettings import get_docker_logger_config
 LOGGING = get_docker_logger_config()
@@ -274,6 +275,7 @@ _tracking_log_dir = os.path.join(
     os.environ.get('NODE_NAME', 'unknown-node'),
     os.environ.get('POD_NAME', 'unknown-pod'),
 )
+
 os.makedirs(_tracking_log_dir, exist_ok=True)
 LOGGING["handlers"]["tracking"] = {
     'level': 'DEBUG',
@@ -281,6 +283,25 @@ LOGGING["handlers"]["tracking"] = {
     'filename': os.path.join(_tracking_log_dir, 'tracking.log'),
     'formatter': 'raw',
 }
+
+# This overrides the existing syslog format for Docker with an extended one and adds it to the console handler.
+try:
+    # This should check to see if ddtrace is available in the context for setting up the loggers.
+    # If it is available, include Datadog information in the log string. If it is not, exclude it.
+    import ddtrace
+    syslog_format = ("[%(name)s] %(levelname)s "
+                    "[dd.trace_id=%(dd.trace_id)s dd.span_id=%(dd.span_id)s] "
+                     "[{hostname}] [process %(process)d] [user %(userid)s] [ip %(remoteip)s] [%(filename)s:%(lineno)d] "
+                     "- %(message)s").format(hostname=platform.node().split(".")[0])
+except ImportError:
+    syslog_format = ("[%(name)s] %(levelname)s "
+                        "[{hostname}] [process %(process)d] [user %(userid)s] [ip %(remoteip)s] [%(filename)s:%(lineno)d] "
+                        "- %(message)s").format(hostname=platform.node().split(".")[0])
+
+
+LOGGING["formatters"]["syslog_format"] = {"format": syslog_format}
+LOGGING["handlers"]["console"]["formatter"] = "syslog_format"
+
 EOF
 
     cp lms/envs/docker-production.py cms/envs/docker-production.py
