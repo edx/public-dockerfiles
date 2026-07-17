@@ -302,7 +302,8 @@ RUN pip install -e .
 # out the stage allows us to shed all of the unwanted out-of-repo changes.
 FROM app-deps AS translations
 
-ARG OPENEDX_ATLAS_EXTRA_SOURCES
+# Set this to the empty string by default.
+ARG OPENEDX_ATLAS_EXTRA_SOURCES=
 ARG OPENEDX_TRANSLATIONS_VERSION
 ARG OPENEDX_TRANSLATIONS_REPO
 
