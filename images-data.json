@@ -47,24 +47,14 @@
     "image_name": "cms",
     "name": "cms",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "development",
-    "build_args": {
-      "SERVICE_VARIANT": "cms",
-      "SERVICE_PORT": "18010",
-      "OPENEDX_ATLAS_EXTRA_SOURCES": ""
-    }
+    "target": "development"
   },
   {
     "dockerfile": "edx-platform",
     "image_name": "lms",
     "name": "lms",
     "os_platform": "linux/amd64,linux/arm64",
-    "target": "development",
-    "build_args": {
-      "SERVICE_VARIANT": "lms",
-      "SERVICE_PORT": "18000",
-      "OPENEDX_ATLAS_EXTRA_SOURCES": ""
-    }
+    "target": "development"
   },
   {
     "image_name": "edx-notes-api",
