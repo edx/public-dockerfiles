@@ -50,7 +50,8 @@
     "target": "development",
     "build_args": {
       "SERVICE_VARIANT": "cms",
-      "SERVICE_PORT": "18010"
+      "SERVICE_PORT": "18010",
+      "OPENEDX_ATLAS_EXTRA_SOURCES": ""
     }
   },
   {
@@ -61,7 +62,8 @@
     "target": "development",
     "build_args": {
       "SERVICE_VARIANT": "lms",
-      "SERVICE_PORT": "18000"
+      "SERVICE_PORT": "18000",
+      "OPENEDX_ATLAS_EXTRA_SOURCES": ""
     }
   },
   {
