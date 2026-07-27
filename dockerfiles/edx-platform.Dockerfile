@@ -260,8 +260,8 @@ ARG EDX_PLATFORM_VERSION
 ADD https://github.com/${EDX_PLATFORM_REPO}.git#${EDX_PLATFORM_VERSION} .
 
 # Create a docker-production Django settings file. This is just production.py
-# but with adjustments for logging in a Docker environment. We'll use this in
-# both development and production.
+# but with adjustments for logging in a Docker environment. This will be used in production.
+
 RUN <<EOCMD
     set -eu
 
