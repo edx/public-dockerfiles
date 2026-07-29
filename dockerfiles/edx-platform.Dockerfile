@@ -288,12 +288,19 @@ LOGGING["handlers"]["tracking"] = {
 try:
     # This should check to see if ddtrace is available in the context for setting up the loggers.
     # If it is available, include Datadog information in the log string. If it is not, exclude it.
-    import ddtrace
+    # Once we're on Python 3.12, we can use the "defaults" dictionary key instead.
+    from ddtrace import tracer
+    dd_enabled = tracer.enabled
+
+except ImportError:
+    dd_enabled = False
+
+if dd_enabled:
     syslog_format = ("%(asctime)s %(levelname)s [%(name)s] "
                     "[dd.trace_id=%(dd.trace_id)s dd.span_id=%(dd.span_id)s] "
-                     "[{hostname}] [process %(process)d] [user %(userid)s] [ip %(remoteip)s] [%(filename)s:%(lineno)d] "
-                     "- %(message)s").format(hostname=platform.node().split(".")[0])
-except ImportError:
+                        "[{hostname}] [process %(process)d] [user %(userid)s] [ip %(remoteip)s] [%(filename)s:%(lineno)d] "
+                        "- %(message)s").format(hostname=platform.node().split(".")[0])
+else:
     syslog_format = ("%(asctime)s %(levelname)s [%(name)s] "
                         "[{hostname}] [process %(process)d] [user %(userid)s] [ip %(remoteip)s] [%(filename)s:%(lineno)d] "
                         "- %(message)s").format(hostname=platform.node().split(".")[0])
