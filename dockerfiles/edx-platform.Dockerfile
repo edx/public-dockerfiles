@@ -285,19 +285,9 @@ LOGGING["handlers"]["tracking"] = {
 }
 
 # This overrides the existing syslog format for Docker with an extended one and adds it to the console handler.
-try:
-    # This should check to see if ddtrace is available in the context for setting up the loggers.
-    # If it is available, include Datadog information in the log string. If it is not, exclude it.
-    import ddtrace
-    syslog_format = ("%(asctime)s %(levelname)s [%(name)s] "
-                    "[dd.trace_id=%(dd.trace_id)s dd.span_id=%(dd.span_id)s] "
-                     "[{hostname}] [process %(process)d] [user %(userid)s] [ip %(remoteip)s] [%(filename)s:%(lineno)d] "
-                     "- %(message)s").format(hostname=platform.node().split(".")[0])
-except ImportError:
-    syslog_format = ("%(asctime)s %(levelname)s [%(name)s] "
-                        "[{hostname}] [process %(process)d] [user %(userid)s] [ip %(remoteip)s] [%(filename)s:%(lineno)d] "
-                        "- %(message)s").format(hostname=platform.node().split(".")[0])
-
+syslog_format = ("%(asctime)s %(levelname)s [%(name)s] "
+                    "[{hostname}] [process %(process)d] [user %(userid)s] [ip %(remoteip)s] [%(filename)s:%(lineno)d] "
+                    "- %(message)s").format(hostname=platform.node().split(".")[0])
 
 LOGGING["formatters"]["syslog_format"] = {"format": syslog_format}
 LOGGING["handlers"]["console"]["formatter"] = "syslog_format"
