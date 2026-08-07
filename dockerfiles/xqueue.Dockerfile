@@ -59,12 +59,12 @@ EXPOSE 8040
 
 FROM app AS dev
 
-RUN curl -L -o ${XQUEUE_CODE_DIR}/requirements/dev.txt https://raw.githubusercontent.com/openedx/xqueue/master/requirements/dev.txt
+RUN curl -L -o ${XQUEUE_CODE_DIR}/requirements/dev.txt https://raw.githubusercontent.com/edx/xqueue/master/requirements/dev.txt
 # xqueue service config commands below
 RUN pip install -r ${XQUEUE_CODE_DIR}/requirements/dev.txt
 
 # cloning git repo
-RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+RUN curl -L https://github.com/edx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 RUN curl -L -o ${XQUEUE_CODE_DIR}/xqueue/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/xqueue.py
 
@@ -74,12 +74,12 @@ CMD while true; do python ./manage.py runserver 0.0.0.0:8040; sleep 2; done
 
 FROM app AS production
 
-RUN curl -L -o ${XQUEUE_APP_DIR}/requirements.txt https://raw.githubusercontent.com/openedx/xqueue/master/requirements.txt
+RUN curl -L -o ${XQUEUE_APP_DIR}/requirements.txt https://raw.githubusercontent.com/edx/xqueue/master/requirements.txt
 # xqueue service config commands below
 RUN pip install -r ${XQUEUE_APP_DIR}/requirements.txt
 
 # cloning git repo
-RUN curl -L https://github.com/openedx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+RUN curl -L https://github.com/edx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 ENV DJANGO_SETTINGS_MODULE=xqueue.production
 
