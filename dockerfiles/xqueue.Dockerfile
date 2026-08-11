@@ -126,7 +126,7 @@ EXPOSE 8040
 
 FROM app AS dev
 
-RUN curl -L -o ${XQUEUE_CODE_DIR}/requirements/dev.txt https://raw.githubusercontent.com/openedx/xqueue/master/requirements/dev.txt
+RUN curl -L -o ${XQUEUE_CODE_DIR}/requirements/dev.txt https://raw.githubusercontent.com/edx/xqueue/master/requirements/dev.txt
 # xqueue service config commands below
 RUN pip install -r ${XQUEUE_CODE_DIR}/requirements/dev.txt
 
