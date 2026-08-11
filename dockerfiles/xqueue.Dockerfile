@@ -107,19 +107,10 @@ RUN mkdir -p requirements
 
 RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${XQUEUE_VENV_DIR}
 
-# Copy the requirements explicitly even though we copy everything below.
-# This prevents the image cache from busting unless the dependencies have changed.
-RUN curl -L -o requirements.txt https://raw.githubusercontent.com/edx/xqueue/master/requirements.txt
-
-# Dependencies are installed as root so they cannot be modified by the application user.
-RUN pip install -r requirements.txt
-
 # Create placeholder file for devstack provisioning, if needed
 RUN touch ${XQUEUE_APP_DIR}/xqueue_env
 
 # This line is after the requirements so that changes to the code will not
-# bust the image cache.
-RUN curl -L https://github.com/edx/xqueue/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
 # Expose ports.
 EXPOSE 8040
