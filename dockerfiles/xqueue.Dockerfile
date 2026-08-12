@@ -9,8 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 # software-properties-common is needed to setup Python 3.11 env
 #
 # NOTE: The deadsnakes PPA is no longer used to install Python 3.11. deadsnakes
-# no longer has these packages for Ubuntu Focal, which is EOL. See BOMS-239 and
-# BOMS-238. Python 3.11 is instead installed from vendored deb packages below.
+# no longer has these packages for Ubuntu Focal, which is EOL. Python 3.11 is instead installed from vendored deb packages below.
 RUN apt-get update && \
   apt-get install -y software-properties-common
   # Remember to add "&& \" to above line when restoring this:
@@ -30,7 +29,7 @@ RUN apt-get upgrade -qy && \
 # These packages are built using the deadsnakes py3.11 repo and runbook.
 
 # Packages that are needed for installing the vendored Python packages, but
-# that can be found in the regular Ubuntu repositories. See BOMS-239. This
+# that can be found in the regular Ubuntu repositories. This
 # bit should be entirely removed once we're installing Python 3.11 via apt.
 RUN apt-get update && \
     apt-get -y install --no-install-recommends \
