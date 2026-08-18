@@ -1,4 +1,4 @@
-FROM ubuntu:focal AS app
+FROM ubuntu:jammy AS app
 
 # Packages installed:
 # git; Used to pull in particular requirements from github rather than pypi,
