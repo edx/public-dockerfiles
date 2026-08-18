@@ -1,4 +1,4 @@
-FROM ubuntu:focal AS app
+FROM ubuntu:jammy AS app
 MAINTAINER sre@edx.org
 
 # ENV variables for Python 3.12 support

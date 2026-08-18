@@ -1,4 +1,4 @@
-FROM ubuntu:focal AS app
+FROM ubuntu:jammy AS app
 
 # ENV variables for Python 3.12 support
 ARG PYTHON_VERSION=3.12
