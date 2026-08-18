@@ -1,0 +1,27 @@
+dockerfiles/edx-analytics-dashboard.Dockerfile
+  s_84200930cb415f::t_e32ec23abc695f 1
+dockerfiles/edx-exams.Dockerfile
+  s_84200930cb415f::t_da3d0fa55d5b56 1
+dockerfiles/edx-notes-api.Dockerfile
+  s_84200930cb415f::t_077eb8a0059d7f 1
+dockerfiles/portal-designer.Dockerfile
+  s_84200930cb415f::t_1afc172786a2e0 1
+dockerfiles/registrar.Dockerfile
+  s_84200930cb415f::t_f524d8c60f5a85 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "645227ed0351adf7f91862f71f1d66839a95cf34",
+  "prompts": {},
+  "sessions": {
+    "s_84200930cb415f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fb19c6c3-5b17-4e8a-86d8-f294782c625c",
+        "model": "claude-opus-5"
+      },
+      "human_author": "rgopalrao-sonata-png <rgopalrao-sonata@2u.com>"
+    }
+  }
+}
