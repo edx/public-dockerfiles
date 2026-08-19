@@ -1,0 +1,19 @@
+dockerfiles/program-intent-engagement.Dockerfile
+  s_0d5bbb25b32d72::t_732833f513e9dd 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "134ae1f9aa58ea4d04ca07e0e98a3b3db7ee8ab3",
+  "prompts": {},
+  "sessions": {
+    "s_0d5bbb25b32d72": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fd1f5db1-5655-43f5-8d3f-f4b5592bf1b6",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "rgopalrao-sonata-png <rgopalrao-sonata@2u.com>"
+    }
+  }
+}
