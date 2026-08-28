@@ -34,7 +34,7 @@ on:
 
 jobs:
   set-matrix:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       docker_images: ${{ steps.set-images-input.outputs.images_to_build }}
     steps:
@@ -54,7 +54,7 @@ jobs:
             echo "images_to_build=$images" >> $GITHUB_OUTPUT
           fi
   push:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     # Keep building other images even if one of them fails. As a confusing side
     # effect, the overall workflow will show up as having passed (even though a
     # job has failed), but the important part is that notification emails should
