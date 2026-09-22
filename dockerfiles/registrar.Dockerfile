@@ -2,9 +2,13 @@ FROM ubuntu:jammy AS app
 
 # ENV variables for Python 3.12 support
 ARG PYTHON_VERSION=3.12
+# Translations are pulled from this repo at build time via atlas (OEP-58);
+# GoCD passes --build-arg OPENEDX_TRANSLATIONS_REPO=edx/openedx-translations
+ARG OPENEDX_TRANSLATIONS_REPO
 ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
+ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
 # software-properties-common is needed to setup Python 3.12 env
 RUN apt-get update && \
@@ -16,6 +20,8 @@ RUN apt-get update
 RUN apt-get install -qy \
 	git-core \
 	language-pack-en \
+	# gettext provides msgfmt, needed by compilemessages when pulling translations
+	gettext \
 	build-essential \
 	# libmysqlclient-dev header files needed to use native C implementation for MySQL-python for performance gains.
 	libmysqlclient-dev \
@@ -97,6 +103,12 @@ RUN pip install --no-cache-dir -r ${REGISTRAR_CODE_DIR}/requirements/production.
 
 # cloning the repository after requirements installation
 RUN curl -L https://github.com/edx/registrar/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+
+# Fetch and compile translations into the image once the Makefile is in place.
+# Production settings require REGISTRAR_CFG at import time, which does not exist
+# during the image build, so use the local settings (the same module
+# translations-config.json uses for makemessages).
+RUN DJANGO_SETTINGS_MODULE=registrar.settings.local make pull_translations
 
 ENV DJANGO_SETTINGS_MODULE=registrar.settings.production
 
