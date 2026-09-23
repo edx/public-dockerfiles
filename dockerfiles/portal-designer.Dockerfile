@@ -20,10 +20,12 @@ RUN apt-get update && \
 
 # pkg-config; mysqlclient>=2.2.0 requires pkg-config (https://github.com/PyMySQL/mysqlclient/issues/620)
 # gettext; provides msgfmt, needed by compilemessages when pulling translations
+# git; atlas pulls translations with a sparse git clone of edx/openedx-translations
 
 RUN apt-get update && apt-get -qy install --no-install-recommends \
  build-essential \
  gettext \
+ git \
  language-pack-en \
  locales \
  libmysqlclient-dev \
