@@ -30,6 +30,10 @@ ARG PYTHON_VERSION=3.12
 ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
+# Translations are pulled from this repo at build time via atlas (OEP-58);
+# GoCD passes --build-arg OPENEDX_TRANSLATIONS_REPO=edx/openedx-translations
+ARG OPENEDX_TRANSLATIONS_REPO
+ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
 # software-properties-common is needed to setup Python 3.12 env
 RUN apt-get update && \
@@ -41,6 +45,8 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  build-essential \
  language-pack-en \
  locales \
+ # gettext provides msgfmt, needed by compilemessages when pulling translations
+ gettext \
  pkg-config \
  libmysqlclient-dev \
  libssl-dev \
@@ -97,6 +103,9 @@ RUN mkdir -p /edx/var/log
 
 # Clone the source code
 RUN curl -L https://github.com/edx/enterprise-access/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+
+# Fetch and compile translations into the image once the Makefile is in place
+RUN make pull_translations
 
 # Change user to app
 USER app
