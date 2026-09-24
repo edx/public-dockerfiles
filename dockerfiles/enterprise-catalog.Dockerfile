@@ -19,12 +19,13 @@ MAINTAINER sre@edx.org
 #     MySQL-python for performance gains.
 
 ARG PYTHON_VERSION=3.12
-# Translations are pulled from this repo at build time via atlas (OEP-58);
-# GoCD passes --build-arg OPENEDX_TRANSLATIONS_REPO=edx/openedx-translations
-ARG OPENEDX_TRANSLATIONS_REPO
 ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
+
+# Translations are pulled from this repo at build time via atlas (OEP-58);
+# GoCD passes --build-arg OPENEDX_TRANSLATIONS_REPO=edx/openedx-translations
+ARG OPENEDX_TRANSLATIONS_REPO
 ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
 # If you add a package here please include a comment above describing what it is used for
