@@ -26,9 +26,16 @@ LABEL org.opencontainers.image.authors="sre@edx.org"
 
 # ENV variables for Python 3.12 support
 ARG PYTHON_VERSION=3.12
+# setuptools >= 81 drops pkg_resources, which coreapi (via django-rest-swagger)
+# still imports at Django startup. Pin below that.
+ARG SETUPTOOLS_VERSION=80.10.2
+# Translations are pulled from this repo at build time via atlas (OEP-58);
+# GoCD passes --build-arg OPENEDX_TRANSLATIONS_REPO=edx/openedx-translations
+ARG OPENEDX_TRANSLATIONS_REPO
 ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
+ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
 # software-properties-common is needed to setup Python 3.12 env
 RUN apt-get update && \
@@ -49,11 +56,14 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  curl \
  python3-pip \
  python${PYTHON_VERSION} \
- python${PYTHON_VERSION}-dev
+ python${PYTHON_VERSION}-dev \
+ # gettext provides msgfmt, needed by compilemessages when pulling translations
+ gettext
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN pip install --upgrade pip setuptools
+RUN pip install --upgrade pip
+RUN pip install setuptools==${SETUPTOOLS_VERSION}
 # delete apt package lists because we do not need them inflating our image
 RUN rm -rf /var/lib/apt/lists/*
 
@@ -87,17 +97,27 @@ RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx
 # Dependencies are installed as root so they cannot be modified by the application user.
 RUN pip install -r requirements/production.txt
 
+# edx-api-doc-tools pulls in an unconstrained "setuptools" dependency, so the
+# requirements install above silently upgrades past the pin above. Re-pin it.
+RUN pip install setuptools==${SETUPTOOLS_VERSION}
+
 RUN mkdir -p /edx/var/log
 
 # This line is after the requirements so that changes to the code will not
 # bust the image cache
 RUN curl -L https://github.com/edx/edx-exams/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
 
+# Fetch and compile translations into the image once the code (and Makefile) is in place.
+# Production settings open $EDX_EXAMS_CFG at import time, which does not
+# exist during the build, so use the test settings (base settings + sqlite).
+RUN DJANGO_SETTINGS_MODULE=edx_exams.settings.test make pull_translations
+
 FROM app as devstack
 
 ENV DJANGO_SETTINGS_MODULE edx_exams.settings.devstack
 
 RUN pip install -r requirements/dev.txt
+RUN pip install setuptools==${SETUPTOOLS_VERSION}
 
 CMD while true; do python ./manage.py runserver 0.0.0.0:18740; sleep 2; done
 
