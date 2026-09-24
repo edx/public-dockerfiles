@@ -3,9 +3,13 @@ MAINTAINER sre@edx.org
 
 # ENV variables for Python 3.12 support
 ARG PYTHON_VERSION=3.12
+# Translations are pulled from this repo at build time via atlas (OEP-58);
+# GoCD passes --build-arg OPENEDX_TRANSLATIONS_REPO=edx/openedx-translations
+ARG OPENEDX_TRANSLATIONS_REPO
 ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
+ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
 # software-properties-common is needed to setup Python 3.12 env
 RUN apt-get update && \
@@ -15,9 +19,13 @@ RUN apt-get update && \
 # Packages installed:
 
 # pkg-config; mysqlclient>=2.2.0 requires pkg-config (https://github.com/PyMySQL/mysqlclient/issues/620)
+# gettext; provides msgfmt, needed by compilemessages when pulling translations
+# git; atlas pulls translations with a sparse git clone of edx/openedx-translations
 
 RUN apt-get update && apt-get -qy install --no-install-recommends \
  build-essential \
+ gettext \
+ git \
  language-pack-en \
  locales \
  libmysqlclient-dev \
@@ -70,6 +78,11 @@ RUN mkdir -p /edx/var/log
 
 # Clone the application code
 RUN curl -L https://github.com/edx/portal-designer/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
+
+# Fetch and compile translations into the image once the Makefile is in place.
+# Production settings open DESIGNER_CFG at import time, which does not exist
+# during the build, so use the test settings (base settings + sqlite).
+RUN DJANGO_SETTINGS_MODULE=designer.settings.test make pull_translations
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
