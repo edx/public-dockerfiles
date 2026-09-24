@@ -83,7 +83,7 @@ ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
 RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/production.txt
 
-RUN DISCOVERY_CFG=minimal.yml OPENEDX_ATLAS_PULL=true make pull_translations
+RUN DISCOVERY_CFG=minimal.yml make pull_translations
 
 CMD gunicorn --bind=0.0.0.0:8381 --workers 2 --max-requests=1000 -c course_discovery/docker_gunicorn_configuration.py course_discovery.wsgi:application
 
@@ -99,7 +99,7 @@ ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/django.txt
 RUN pip install -r ${DISCOVERY_CODE_DIR}/requirements/local.txt
 
-RUN DISCOVERY_CFG=minimal.yml OPENEDX_ATLAS_PULL=true make pull_translations
+RUN DISCOVERY_CFG=minimal.yml make pull_translations
 
 # Devstack related step for backwards compatibility
 RUN touch ${DISCOVERY_APP_DIR}/discovery_env
