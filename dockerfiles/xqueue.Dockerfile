@@ -1,19 +1,17 @@
 FROM ubuntu:jammy AS app
 
-# ENV variables for Python 3.12 support
+# ARG and ENV variables for Python 3.12 support
 ARG PYTHON_VERSION=3.12
 ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
 
-# software-properties-common is needed to setup Python 3.12 env
+# System requirements. software-properties-common is only needed to add the
+# deadsnakes PPA for Python 3.12, so it is removed again in the same layer.
 RUN apt-get update && \
-  apt-get install -y software-properties-common && \
-  apt-add-repository -y ppa:deadsnakes/ppa
-
-# System requirements
-
-RUN apt-get update && \
+    apt-get install -qy software-properties-common && \
+    apt-add-repository -y ppa:deadsnakes/ppa && \
+    apt-get update && \
     apt-get upgrade -qy && \
     apt-get install -qy \
     build-essential \
@@ -23,14 +21,18 @@ RUN apt-get update && \
     python${PYTHON_VERSION} \
     python${PYTHON_VERSION}-dev \
     python${PYTHON_VERSION}-venv && \
+    apt-get purge -qy software-properties-common && \
+    apt-get autoremove -qy && \
     rm -rf /var/lib/apt/lists/*
 
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 1
 
 # Bootstrap a Python 3.12 pip. We can't use Ubuntu's apt python3-pip because it is
 # built for the system Python and breaks when run under Python 3.12.
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
-RUN pip install virtualenv
+RUN curl -fsSL -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py && \
+    python${PYTHON_VERSION} /tmp/get-pip.py && \
+    rm /tmp/get-pip.py
+RUN python${PYTHON_VERSION} -m pip install virtualenv
 
 # Use UTF-8.
 RUN locale-gen en_US.UTF-8
