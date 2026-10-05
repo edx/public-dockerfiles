@@ -27,13 +27,6 @@ RUN apt-get update && \
 
 RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 1
 
-# Bootstrap a Python 3.12 pip. We can't use Ubuntu's apt python3-pip because it is
-# built for the system Python and breaks when run under Python 3.12.
-RUN curl -fsSL -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py && \
-    python${PYTHON_VERSION} /tmp/get-pip.py && \
-    rm /tmp/get-pip.py
-RUN python${PYTHON_VERSION} -m pip install virtualenv
-
 # Use UTF-8.
 RUN locale-gen en_US.UTF-8
 ENV LANG=en_US.UTF-8
@@ -53,7 +46,8 @@ WORKDIR ${XQUEUE_CODE_DIR}
 
 RUN mkdir -p requirements
 
-RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${XQUEUE_VENV_DIR}
+# Use Python's built-in venv module; the venv gets its own pip via ensurepip.
+RUN python${PYTHON_VERSION} -m venv --copies ${XQUEUE_VENV_DIR}
 
 # Create placeholder file for devstack provisioning, if needed
 RUN touch ${XQUEUE_APP_DIR}/xqueue_env
