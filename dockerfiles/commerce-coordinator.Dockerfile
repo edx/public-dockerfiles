@@ -10,6 +10,7 @@ MAINTAINER sre@edx.org
 # libmysqlclient-dev; to install header files needed to use native C implementation for MySQL-python for performance gains.
 # libssl-dev; # mysqlclient wont install without this.
 # pkg-config is now required for libmysqlclient-dev and its python dependencies
+# gettext; provides msgfmt, needed by compilemessages when pulling translations
 # python3-dev; to install header files for python extensions; much wheel-building depends on this
 # python3-pip; install pip to install application requirements.txt files
 # python; ubuntu doesnt ship with python, so this is the python we will use to run the application
@@ -19,6 +20,11 @@ ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
 ARG PYTHON_VERSION=3.12
 
+# Translations are pulled from this repo at build time via atlas (OEP-58);
+# GoCD passes --build-arg OPENEDX_TRANSLATIONS_REPO=edx/openedx-translations
+ARG OPENEDX_TRANSLATIONS_REPO
+ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
+
 # If you add a package here please include a comment above describing what it is used for
 
 RUN apt-get update && \
@@ -27,6 +33,7 @@ RUN apt-get update && \
 
 RUN apt-get update && apt-get -qy install --no-install-recommends \
  build-essential \
+ gettext \
  language-pack-en \
  locales \
  curl \
@@ -70,6 +77,10 @@ RUN pip install -r requirements/production.txt
 RUN mkdir -p /edx/var/log
 
 RUN curl -L https://github.com/edx/commerce-coordinator/archive/refs/heads/main.tar.gz | tar -xz --strip-components=1
+
+# Fetch and compile translations into the image once the Makefile is in place.
+# Production settings only load COMMERCE_COORDINATOR_CFG when it is set, so no settings override is needed.
+RUN make pull_translations
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
