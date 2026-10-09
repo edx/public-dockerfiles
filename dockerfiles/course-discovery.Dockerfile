@@ -61,7 +61,7 @@ RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${DISCOVERY_VENV_DIR}
 # No need to activate discovery venv as it is already in path
 RUN pip install nodeenv
 
-RUN nodeenv ${DISCOVERY_NODEENV_DIR} --node=16.14.0 --prebuilt && npm install -g npm@8.5.x
+RUN nodeenv ${DISCOVERY_NODEENV_DIR} --node=24.21.0 --prebuilt && npm install -g npm@11.19.0
 
 # Working directory will be root of repo.
 WORKDIR ${DISCOVERY_CODE_DIR}
@@ -69,7 +69,9 @@ WORKDIR ${DISCOVERY_CODE_DIR}
 # Cloning git repo
 RUN curl -L https://github.com/edx/course-discovery/archive/refs/heads/master.tar.gz | tar -xz --strip-components=1
 
-RUN npm install --production && ./node_modules/.bin/bower install --allow-root --production && ./node_modules/.bin/webpack --config webpack.config.js --progress
+# NODE_OPTIONS: webpack loaders still hash with MD4, which OpenSSL 3 (Node 17+) rejects.
+# Remove once file-loader/loader-utils are upgraded in course-discovery.
+RUN npm install --production && ./node_modules/.bin/bower install --allow-root --production && NODE_OPTIONS=--openssl-legacy-provider ./node_modules/.bin/webpack --config webpack.config.js --progress
 
 # Expose canonical Discovery port
 EXPOSE 8381
