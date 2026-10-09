@@ -212,7 +212,7 @@ RUN pip install -r requirements/edx/base.txt
 RUN pip install -r requirements/edx/assets.txt
 
 # Install node and npm
-RUN nodeenv /edx/app/edxapp/nodeenv --node=18.19.0 --prebuilt
+RUN nodeenv /edx/app/edxapp/nodeenv --node=24.21.0 --prebuilt
 RUN npm install -g npm@10.5.x
 
 # This script is used by an npm post-install hook.
