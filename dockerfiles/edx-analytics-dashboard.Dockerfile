@@ -68,7 +68,7 @@ RUN curl -L https://github.com/edx/edx-analytics-dashboard/archive/refs/heads/ma
 
 RUN curl -L -o ${INSIGHTS_CODE_DIR}/analytics_dashboard/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/analytics_dashboard.py
 
-RUN nodeenv ${INSIGHTS_NODEENV_DIR} --node=18.20.2 --prebuilt \
+RUN nodeenv ${INSIGHTS_NODEENV_DIR} --node=24.21.0 --prebuilt \
   && npm install -g npm@10.5.x
 
 RUN npm set progress=false && npm ci
