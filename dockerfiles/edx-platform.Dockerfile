@@ -203,11 +203,13 @@ RUN --mount=type=secret,id=GIT_AUTH_TOKEN \
     # when there's no token available. Doesn't seem to be a problem, though.
     gh_auth="$(cat /run/secrets/GIT_AUTH_TOKEN || true)@" && \
     mkdir -p requirements/edx && \
-    curl -fLsS -o requirements/pip.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/pip-tools.txt && \
+    curl -fLsS -o requirements/pip.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/pip.txt && \
+    curl -fLsS -o requirements/pip-tools.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/pip-tools.txt && \
     curl -fLsS -o requirements/edx/base.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/base.txt && \
     curl -fLsS -o requirements/edx/assets.txt https://${gh_auth}raw.githubusercontent.com/${EDX_PLATFORM_REPO}/${EDX_PLATFORM_VERSION}/requirements/edx/assets.txt
 
 RUN pip install -r requirements/pip.txt
+RUN pip install -r requirements/pip-tools.txt
 RUN pip install -r requirements/edx/base.txt
 RUN pip install -r requirements/edx/assets.txt
 
