@@ -1,4 +1,4 @@
-FROM ubuntu:jammy as app
+FROM ubuntu:noble as app
 MAINTAINER devops@edx.org
 
 
@@ -9,7 +9,7 @@ MAINTAINER devops@edx.org
 # language-pack-en locales; ubuntu locale support so that system utilities have a consistent
 # language and time zone.
 
-# python; ubuntu doesnt ship with python, so this is the python we will use to run the application
+# python; Python 3.12 is the system Python on ubuntu:noble, installed from the main Ubuntu archive (no PPA)
 
 # python3-pip; install pip to install application requirements.txt files
 
@@ -33,10 +33,8 @@ ENV TZ=UTC
 ENV TERM=xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
 
-# software-properties-common is needed to setup Python 3.12 env
-RUN apt-get update && \
-  apt-get install -y software-properties-common && \
-  apt-add-repository -y ppa:deadsnakes/ppa
+# Retry transient mirror failures (timeouts, 5xx) instead of failing the whole image build.
+RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
 
 RUN apt-get update && apt-get -qy install --no-install-recommends \
  language-pack-en \
@@ -53,14 +51,12 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  libsqlite3-dev \
  python3-pip \
  python${PYTHON_VERSION} \
- python${PYTHON_VERSION}-dev
+ python${PYTHON_VERSION}-dev \
+ python${PYTHON_VERSION}-venv
 
-# Use virtualenv pypi package with Python 3.12
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
-RUN pip install virtualenv
-
+# noble's system Python is externally managed (PEP 668), so create the venv with the stdlib venv module.
 ENV VIRTUAL_ENV=/edx/app/license-manager/venvs/license-manager
-RUN virtualenv -p python${PYTHON_VERSION} $VIRTUAL_ENV
+RUN python${PYTHON_VERSION} -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN locale-gen en_US.UTF-8
@@ -71,6 +67,8 @@ ENV DJANGO_SETTINGS_MODULE license_manager.settings.production
 
 EXPOSE 18170
 EXPOSE 18171
+# ubuntu:noble ships an "ubuntu" user with UID 1000; remove it so "app" keeps UID 1000 as on jammy.
+RUN userdel -r ubuntu
 RUN useradd -m --shell /bin/false app
 
 # Install watchman

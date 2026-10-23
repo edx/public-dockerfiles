@@ -1,4 +1,4 @@
-FROM ubuntu:jammy AS app
+FROM ubuntu:noble AS app
 MAINTAINER sre@edx.org
 
 
@@ -11,7 +11,7 @@ MAINTAINER sre@edx.org
 # language-pack-en locales; ubuntu locale support so that system utilities have a consistent
 # language and time zone.
 
-# python; ubuntu doesnt ship with python, so this is the python we will use to run the application
+# python; Python 3.12 is the system Python on ubuntu:noble, installed from the main Ubuntu archive (no PPA)
 
 # pkg-config
 #     mysqlclient>=2.2.0 requires this (https://github.com/PyMySQL/mysqlclient/issues/620)
@@ -35,10 +35,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ARG OPENEDX_TRANSLATIONS_REPO
 ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
-# software-properties-common is needed to setup Python 3.12 env
-RUN apt-get update && \
-  apt-get install -y software-properties-common && \
-  apt-add-repository -y ppa:deadsnakes/ppa
+# Retry transient mirror failures (timeouts, 5xx) instead of failing the whole image build.
+RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
 
 # If you add a package here please include a comment above describing what it is used for
 RUN apt-get update && apt-get -qy install --no-install-recommends \
@@ -85,6 +83,8 @@ ENV DJANGO_SETTINGS_MODULE=enterprise_access.settings.production
 
 EXPOSE 18270
 EXPOSE 18271
+# ubuntu:noble ships an "ubuntu" user with UID 1000; remove it so "app" keeps UID 1000 as on jammy.
+RUN userdel -r ubuntu
 RUN useradd -m --shell /bin/false app
 
 WORKDIR /edx/app/enterprise-access
