@@ -6,7 +6,7 @@ FROM ubuntu:jammy AS base
 ARG OPENEDX_TRANSLATIONS_REPO
 ARG OPENEDX_ATLAS_EXTRA_SOURCES
 ARG CREDENTIALS_SERVICE_REPO=edx/credentials
-ARG CREDENTIALS_SERVICE_VERSION=master
+ARG CREDENTIALS_SERVICE_VERSION=release-ulmo
 ARG PYTHON_VERSION=3.12
 ENV TZ=UTC
 ENV TERM=xterm-256color
@@ -142,7 +142,7 @@ ARG OPENEDX_TRANSLATIONS_REPO
 ENV ATLAS_EXTRA_SOURCES="$OPENEDX_ATLAS_EXTRA_SOURCES"
 
 
-RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/${CREDENTIALS_SERVICE_VERSION}/py_configuration_files/credentials.py
+RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/credentials.py
 
 ENV DJANGO_SETTINGS_MODULE=credentials.settings.devstack
 ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
