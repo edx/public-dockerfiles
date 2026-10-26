@@ -100,10 +100,12 @@ WORKDIR /edx/app/credentials/credentials
 
 # fetching the requirement files that are needed
 RUN mkdir -p requirements
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/credentials/${CREDENTIALS_SERVICE_VERSION}/requirements/pip.txt
 RUN curl -L -o requirements/pip_tools.txt https://raw.githubusercontent.com/edx/credentials/${CREDENTIALS_SERVICE_VERSION}/requirements/pip_tools.txt
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/credentials/${CREDENTIALS_SERVICE_VERSION}/requirements/production.txt
 
 # Dependencies are installed as root so they cannot be modified by the application user.
+RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/pip_tools.txt
 RUN pip install -r requirements/production.txt
 

@@ -49,6 +49,10 @@ RUN mkdir -p requirements
 # Use Python's built-in venv module; the venv gets its own pip via ensurepip.
 RUN python${PYTHON_VERSION} -m venv --copies ${XQUEUE_VENV_DIR}
 
+# ensurepip's pip is older than the repo pins, so install the pinned pip first.
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/xqueue/master/requirements/pip.txt
+RUN pip install -r requirements/pip.txt
+
 # Create placeholder file for devstack provisioning, if needed
 RUN touch ${XQUEUE_APP_DIR}/xqueue_env
 

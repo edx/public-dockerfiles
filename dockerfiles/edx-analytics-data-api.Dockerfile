@@ -63,6 +63,10 @@ RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${ANALYTICS_API_VENV_DIR
 # Create a directory named 'requirements' to copy requirements files into it
 RUN mkdir -p requirements
 
+# Install the repo's pinned pip into the venv instead of the one virtualenv bundles.
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/edx-analytics-data-api/master/requirements/pip.txt
+RUN pip install -r ${ANALYTICS_API_CODE_DIR}/requirements/pip.txt
+
 # Expose canonical Analytics port
 EXPOSE 19001
 

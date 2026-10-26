@@ -60,6 +60,10 @@ WORKDIR ${INSIGHTS_CODE_DIR}/
 # Create required directories for requirements
 RUN mkdir -p requirements
 
+# Install the repo's pinned pip into the venv instead of the one virtualenv bundles.
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/edx-analytics-dashboard/master/requirements/pip.txt
+RUN pip install --no-cache-dir -r requirements/pip.txt
+
 # insights service config commands below
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/edx-analytics-dashboard/master/requirements/production.txt
 RUN pip install  --no-cache-dir -r requirements/production.txt
