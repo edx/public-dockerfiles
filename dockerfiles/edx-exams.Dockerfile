@@ -92,9 +92,11 @@ WORKDIR /edx/app/edx-exams
 RUN mkdir -p requirements
 # Copy the requirements explicitly even though we copy everything below
 # this prevents the image cache from busting unless the dependencies have changed.
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/edx-exams/main/requirements/pip.txt
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/edx-exams/main/requirements/production.txt
 
 # Dependencies are installed as root so they cannot be modified by the application user.
+RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/production.txt
 
 # edx-api-doc-tools pulls in an unconstrained "setuptools" dependency, so the

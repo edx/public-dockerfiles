@@ -6,7 +6,7 @@ FROM ubuntu:jammy AS base
 ARG OPENEDX_TRANSLATIONS_REPO
 ARG OPENEDX_ATLAS_EXTRA_SOURCES
 ARG CREDENTIALS_SERVICE_REPO=edx/credentials
-ARG CREDENTIALS_SERVICE_VERSION=master
+ARG CREDENTIALS_SERVICE_VERSION=release-ulmo
 ARG PYTHON_VERSION=3.12
 ENV TZ=UTC
 ENV TERM=xterm-256color
@@ -100,10 +100,12 @@ WORKDIR /edx/app/credentials/credentials
 
 # fetching the requirement files that are needed
 RUN mkdir -p requirements
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/credentials/${CREDENTIALS_SERVICE_VERSION}/requirements/pip.txt
 RUN curl -L -o requirements/pip_tools.txt https://raw.githubusercontent.com/edx/credentials/${CREDENTIALS_SERVICE_VERSION}/requirements/pip_tools.txt
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/credentials/${CREDENTIALS_SERVICE_VERSION}/requirements/production.txt
 
 # Dependencies are installed as root so they cannot be modified by the application user.
+RUN pip install -r requirements/pip.txt
 RUN pip install -r requirements/pip_tools.txt
 RUN pip install -r requirements/production.txt
 
@@ -140,7 +142,7 @@ ARG OPENEDX_TRANSLATIONS_REPO
 ENV ATLAS_EXTRA_SOURCES="$OPENEDX_ATLAS_EXTRA_SOURCES"
 
 
-RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/${CREDENTIALS_SERVICE_VERSION}/py_configuration_files/credentials.py
+RUN curl -L -o credentials/settings/devstack.py https://raw.githubusercontent.com/edx/devstack/master/py_configuration_files/credentials.py
 
 ENV DJANGO_SETTINGS_MODULE=credentials.settings.devstack
 ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"

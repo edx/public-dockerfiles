@@ -70,7 +70,9 @@ RUN mkdir -p requirements
 # Create virtual environment for the application
 RUN virtualenv -p python${PYTHON_VERSION} --always-copy ${DESIGNER_VENV_DIR}
 
-# Download and install application requirements
+# Download and install application requirements, pinned pip first
+RUN curl -L -o requirements/pip.txt https://raw.githubusercontent.com/edx/portal-designer/master/requirements/pip.txt
+RUN pip install -r requirements/pip.txt
 RUN curl -L -o requirements/production.txt https://raw.githubusercontent.com/edx/portal-designer/master/requirements/production.txt
 RUN pip install -r requirements/production.txt
 
