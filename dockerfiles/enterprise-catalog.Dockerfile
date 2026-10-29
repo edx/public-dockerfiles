@@ -1,4 +1,4 @@
-FROM ubuntu:jammy AS app
+FROM ubuntu:noble AS app
 MAINTAINER sre@edx.org
 
 # Packages installed:
@@ -29,9 +29,8 @@ ARG OPENEDX_TRANSLATIONS_REPO
 ENV ATLAS_OPTIONS="--repository=$OPENEDX_TRANSLATIONS_REPO"
 
 # If you add a package here please include a comment above describing what it is used for
-RUN apt-get update && \
-  apt-get install -y software-properties-common && \
-  apt-add-repository -y ppa:deadsnakes/ppa
+# Retry transient mirror failures (timeouts, 5xx) instead of failing the whole image build.
+RUN echo 'Acquire::Retries "5";' > /etc/apt/apt.conf.d/80-retries
 
 RUN apt-get update && apt-get -qy install --no-install-recommends \
  build-essential \
@@ -49,15 +48,14 @@ RUN apt-get update && apt-get -qy install --no-install-recommends \
  wget \
  python3.12 \
  python3.12-dev \
+ python${PYTHON_VERSION}-venv \
  python3-pip
 
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN curl -sS https://bootstrap.pypa.io/get-pip.py | python${PYTHON_VERSION}
-RUN pip install virtualenv
-
+# noble's system Python is externally managed (PEP 668), so create the venv with the stdlib venv module.
 ENV VIRTUAL_ENV=/venv
-RUN virtualenv -p python$PYTHON_VERSION $VIRTUAL_ENV
+RUN python${PYTHON_VERSION} -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 RUN pip install pip==24.0 setuptools==69.5.1
@@ -72,6 +70,8 @@ ENV DJANGO_SETTINGS_MODULE enterprise_catalog.settings.production
 EXPOSE 8160
 EXPOSE 8161
 
+# ubuntu:noble ships an "ubuntu" user with UID 1000; remove it so "app" keeps UID 1000 as on jammy.
+RUN userdel -r ubuntu
 RUN useradd -m --shell /bin/false app
 
 WORKDIR /edx/app/enterprise-catalog
