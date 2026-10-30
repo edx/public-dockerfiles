@@ -12,6 +12,7 @@ on:
           - credentials
           - ecommerce
           - edx-analytics-data-api
+          - edx-analytics-dashboard
           - edx-exams
           - cms
           - lms

@@ -36,6 +36,14 @@
     "owning_team_email": "team-cosmonauts@edx.org"
   },
   {
+    "dockerfile": "edx-analytics-dashboard",
+    "image_name": "insights",
+    "name": "edx-analytics-dashboard",
+    "os_platform": "linux/amd64",
+    "target": "dev",
+    "owning_team_email": "team-cosmonauts@edx.org"
+  },
+  {
     "image_name": "edx-exams",
     "name": "edx-exams",
     "os_platform": "linux/amd64,linux/arm64",
@@ -107,7 +115,7 @@
   },
   {
     "dockerfile": "portal-designer",
-    "image_name": "designer-dev",
+    "image_name": "designer",
     "name": "portal-designer",
     "os_platform": "linux/amd64,linux/arm64",
     "target": "devstack",
