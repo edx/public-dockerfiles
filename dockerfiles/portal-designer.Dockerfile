@@ -84,7 +84,10 @@ RUN curl -L https://github.com/edx/portal-designer/archive/refs/heads/master.tar
 # Fetch and compile translations into the image once the Makefile is in place.
 # Production settings open DESIGNER_CFG at import time, which does not exist
 # during the build, so use the test settings (base settings + sqlite).
-RUN DJANGO_SETTINGS_MODULE=designer.settings.test make pull_translations
+# Those settings log to /var/tmp/edx.log; remove the root-owned file so the
+# app user can create its own at runtime.
+RUN DJANGO_SETTINGS_MODULE=designer.settings.test make pull_translations && \
+  rm -f /var/tmp/edx.log
 
 # Code is owned by root so it cannot be modified by the application user.
 # So we copy it before changing users.
